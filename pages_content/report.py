@@ -8,13 +8,16 @@ import re
 
 
 def build_full_context(df: pd.DataFrame) -> str:
-    """Build comprehensive context for the report."""
+    """Build comprehensive context for the report with safe error handling."""
     numeric_cols = df.select_dtypes(include="number").columns.tolist()
     cat_cols = df.select_dtypes(include="object").columns.tolist()
 
     parts = []
     parts.append(f"Shape: {df.shape[0]} rows × {df.shape[1]} columns")
-    parts.append(f"Columns: {', '.join(df.columns.tolist())}")
+    parts.append(f"Columns: {', '.join(df.columns.tolist()[:15])}")
+    
+    if len(df.columns) > 15:
+        parts.append(f"... and {len(df.columns) - 15} more columns")
 
     if numeric_cols:
         desc = df[numeric_cols].describe().round(2)
@@ -26,22 +29,28 @@ def build_full_context(df: pd.DataFrame) -> str:
             top = df[col].value_counts().head(3)
             parts.append(f"  {col}: {dict(top)}")
 
+    # Safe access to quality report
     quality_report = st.session_state.get("quality_report")
-    if quality_report:
-        parts.append(f"\nData Quality Score: {quality_report['score']}/100")
-        parts.append(f"Completeness: {quality_report['completeness']}%")
-        parts.append(f"Duplicates: {quality_report['duplicate_rows']} rows")
+    if quality_report and isinstance(quality_report, dict):
+        score = quality_report.get('score', 'N/A')
+        completeness = quality_report.get('completeness', 'N/A')
+        duplicate_rows = quality_report.get('duplicate_rows', 'N/A')
+        parts.append(f"\nData Quality Score: {score}/100")
+        parts.append(f"Completeness: {completeness}%")
+        parts.append(f"Duplicates: {duplicate_rows} rows")
 
     insights = st.session_state.get("insights_text")
     if insights:
         parts.append(f"\nAI Insights Summary:\n{insights[:800]}")
 
     cleaning_report = st.session_state.get("cleaning_report")
-    if cleaning_report:
+    if cleaning_report and isinstance(cleaning_report, dict):
+        before = cleaning_report.get('before_shape', [0, 0])[0] if cleaning_report.get('before_shape') else 0
+        after = cleaning_report.get('after_shape', [0, 0])[0] if cleaning_report.get('after_shape') else 0
         parts.append(f"\nCleaning Summary:")
-        parts.append(f"  - Rows before: {cleaning_report['before_shape'][0]}")
-        parts.append(f"  - Rows after: {cleaning_report['after_shape'][0]}")
-        parts.append(f"  - Rows removed: {cleaning_report['before_shape'][0] - cleaning_report['after_shape'][0]}")
+        parts.append(f"  - Rows before: {before}")
+        parts.append(f"  - Rows after: {after}")
+        parts.append(f"  - Rows removed: {before - after}")
 
     return "\n".join(parts)
 
@@ -110,7 +119,7 @@ def format_report_text(text: str) -> str:
             formatted_lines.append(line)
     
     if in_table:
-        table_html += '</tbody></table></div>'
+        table_html += '</tbody></td></div>'
         formatted_lines.append(table_html)
     
     text = '\n'.join(formatted_lines)
@@ -132,12 +141,12 @@ def format_report_text(text: str) -> str:
 
 
 def generate_markdown_report(df: pd.DataFrame, llm_report: str, file_name: str) -> str:
-    """Generate complete markdown report."""
+    """Generate complete markdown report with safe error handling."""
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     numeric_cols = df.select_dtypes(include="number").columns.tolist()
     cat_cols = df.select_dtypes(include="object").columns.tolist()
 
-    quality_report = st.session_state.get("quality_report")
+    quality_report = st.session_state.get("quality_report", {})
     insights_text = st.session_state.get("insights_text", "Not generated.")
 
     lines = []
@@ -161,7 +170,7 @@ def generate_markdown_report(df: pd.DataFrame, llm_report: str, file_name: str) 
 
     # Column list
     lines.append("### 📝 Column Details\n")
-    for i, col in enumerate(df.columns[:10], 1):  # Limit to first 10 columns
+    for i, col in enumerate(df.columns[:10], 1):
         dtype = df[col].dtype
         missing = df[col].isnull().sum()
         missing_pct = (missing / len(df)) * 100
@@ -175,8 +184,8 @@ def generate_markdown_report(df: pd.DataFrame, llm_report: str, file_name: str) 
     if quality_report:
         lines.append("## ✅ 2. Data Quality Assessment\n")
         
-        # Quality score gauge
-        score = quality_report['score']
+        # Quality score gauge with safe defaults
+        score = quality_report.get('score', 0)
         if score >= 85:
             grade = "🟢 Excellent"
         elif score >= 70:
@@ -189,16 +198,8 @@ def generate_markdown_report(df: pd.DataFrame, llm_report: str, file_name: str) 
         lines.append(f"### Overall Quality Score: **{score}/100** ({grade})\n")
         lines.append("| Dimension | Score | Status |")
         lines.append("|-----------|-------|--------|")
-        lines.append(f"| Completeness | {quality_report['completeness']}% | {'✅' if quality_report['completeness'] > 90 else '⚠️'} |")
-        lines.append(f"| Validity | {quality_report['validity']}% | {'✅' if quality_report['validity'] > 80 else '⚠️'} |")
-        lines.append(f"| Consistency | {quality_report['consistency']}% | {'✅' if quality_report['consistency'] > 80 else '⚠️'} |")
-        lines.append(f"| Duplicate Rate | {quality_report['duplicate_rate']}% | {'✅' if quality_report['duplicate_rate'] < 5 else '⚠️'} |\n")
-        
-        if hasattr(quality_report, 'get') and quality_report.get('missing_per_col') and len(quality_report['missing_per_col']) > 0:
-            lines.append("### 🔍 Missing Values by Column\n")
-            for col, count in list(quality_report['missing_per_col'].items())[:5]:
-                pct = (count / df.shape[0]) * 100
-                lines.append(f"- **{col}**: {count:,} missing ({pct:.1f}%)")
+        lines.append(f"| Completeness | {quality_report.get('completeness', 0)}% | {'✅' if quality_report.get('completeness', 0) > 90 else '⚠️'} |")
+        lines.append(f"| Duplicate Rate | {quality_report.get('duplicate_rate', 0)}% | {'✅' if quality_report.get('duplicate_rate', 0) < 5 else '⚠️'} |\n")
 
     if numeric_cols:
         lines.append("\n## 📊 3. Statistical Summary\n")
