@@ -10,6 +10,9 @@ def render():
 
     if not is_data_loaded():
         st.warning("No data loaded.")
+        if st.button("← Back to Home", use_container_width=False):
+            st.session_state.current_page = "home"
+            st.rerun()
         return
 
     df = get_df()
@@ -28,8 +31,20 @@ def render():
                 st.markdown("### Correlation Matrix")
                 st.dataframe(df[numeric_cols].corr(), use_container_width=True)
         
-        if st.button("➡️ Next: Visualization"):
-            st.session_state.current_page = "visualization"
-            st.rerun()
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("← Back to Home", use_container_width=True):
+                st.session_state.current_page = "home"
+                st.rerun()
+        with col2:
+            if st.button("➡️ Next: Visualization", use_container_width=True):
+                st.session_state.current_page = "visualization"
+                st.rerun()
     else:
-        st.info("Click the button above to run statistical analysis.")
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("← Back to Home", use_container_width=True):
+                st.session_state.current_page = "home"
+                st.rerun()
+        with col2:
+            st.info("Click the button above to run statistical analysis.")
