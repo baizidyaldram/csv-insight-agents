@@ -15,7 +15,7 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ── CSS for Proper Layout ──────────────────────────────────────────────────────
+# ── CSS for Perfect Centered Layout ──────────────────────────────────────────
 st.markdown("""
 <style>
 /* Import Google Font */
@@ -31,37 +31,68 @@ st.markdown("""
     background-attachment: fixed;
 }
 
-/* Main content - Proper spacing */
+/* Main content - PERFECTLY CENTERED */
 .main .block-container {
-    padding: 2rem 2rem !important;
-    max-width: 1200px !important;
+    padding: 2rem 3rem !important;
+    max-width: 1000px !important;
     margin: 0 auto !important;
     background: rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(20px);
-    border-radius: 24px;
-    margin-top: 1rem !important;
-    margin-bottom: 1rem !important;
+    border-radius: 28px;
+    margin-top: 2rem !important;
+    margin-bottom: 2rem !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 /* Hide Streamlit Branding */
 #MainMenu, footer, header { visibility: hidden; }
 
-/* Sidebar - FIXED WIDTH AND VISIBLE */
+/* Sidebar - COLLAPSIBLE with proper styling */
 [data-testid="stSidebar"] {
     background: linear-gradient(180deg, rgba(15, 12, 41, 0.98) 0%, rgba(36, 36, 62, 0.98) 100%);
     backdrop-filter: blur(20px);
     border-right: 1px solid rgba(255, 255, 255, 0.15);
-    min-width: 280px !important;
-    width: 280px !important;
+    transition: all 0.3s ease;
+}
+
+[data-testid="stSidebar"][aria-expanded="true"] {
+    min-width: 280px;
+    width: 280px;
+}
+
+[data-testid="stSidebar"][aria-expanded="false"] {
+    min-width: 0px;
+    width: 0px;
+    overflow: hidden;
 }
 
 [data-testid="stSidebar"] * {
     color: #ffffff !important;
 }
 
+/* Sidebar toggle button - VISIBLE AND CLICKABLE */
+[data-testid="collapsedControl"] {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-radius: 0 12px 12px 0;
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 999999;
+    position: fixed;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+[data-testid="collapsedControl"]:hover {
+    background: linear-gradient(135deg, #764ba2, #667eea);
+    transform: translateY(-50%) scale(1.05);
+}
+
 /* Sidebar Content Padding */
 [data-testid="stSidebar"] .element-container {
-    padding: 0 0.5rem;
+    padding: 0 0.75rem;
 }
 
 /* Sidebar Buttons */
@@ -70,8 +101,9 @@ st.markdown("""
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 12px;
     text-align: left;
-    padding: 0.6rem 1rem;
+    padding: 0.7rem 1rem;
     transition: all 0.3s ease;
+    font-weight: 500;
 }
 
 [data-testid="stSidebar"] .stButton button:hover {
@@ -84,10 +116,11 @@ st.markdown("""
 [data-testid="stSidebar"] .stButton button[data-testid="baseButton-primary"] {
     background: linear-gradient(135deg, #667eea, #764ba2);
     border: none;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
 }
 
 /* Cards */
-.agent-card, .glass-card {
+.agent-card {
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.05));
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.15);
@@ -126,6 +159,12 @@ st.markdown("""
     border-radius: 16px;
     padding: 1rem;
     text-align: center;
+    transition: all 0.3s ease;
+}
+
+.metric-card:hover {
+    transform: translateY(-2px);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.08));
 }
 
 .metric-value {
@@ -137,7 +176,7 @@ st.markdown("""
 }
 
 .metric-label {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: rgba(255, 255, 255, 0.7);
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -151,7 +190,7 @@ st.markdown("""
     border: none;
     border-radius: 12px;
     font-weight: 600;
-    padding: 0.5rem 1.5rem;
+    padding: 0.6rem 1.5rem;
     transition: all 0.3s ease;
 }
 
@@ -162,11 +201,12 @@ st.markdown("""
 
 /* Headers */
 h1 {
-    font-size: 2.5rem !important;
+    font-size: 2.8rem !important;
     font-weight: 800 !important;
     background: linear-gradient(135deg, #ffffff, #f093fb);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    text-align: center;
     margin-bottom: 0.5rem !important;
 }
 
@@ -225,6 +265,19 @@ hr {
     border-radius: 12px;
 }
 
+/* Center text utility */
+.text-center {
+    text-align: center;
+}
+
+/* File uploader */
+[data-testid="stFileUploader"] {
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px dashed rgba(255, 255, 255, 0.3);
+    border-radius: 20px;
+    padding: 1rem;
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
     width: 8px;
@@ -246,7 +299,7 @@ hr {
 # ── Session init ──────────────────────────────────────────────────────────────
 init_session()
 
-# ── Sidebar Navigation ────────────────────────────────────────────────────────
+# ── Sidebar Navigation (Collapsible) ─────────────────────────────────────────
 with st.sidebar:
     st.markdown("## 🤖 CSV Insight Agents")
     st.markdown("### AI-Powered Analysis")
@@ -293,7 +346,7 @@ with st.sidebar:
         st.caption("Upload a CSV to begin")
     
     st.markdown("---")
-    st.caption("💡 Tip: Click the arrow ◀ to collapse sidebar")
+    st.caption("💡 Click the ◀ arrow to collapse")
 
 # ── Page Router ───────────────────────────────────────────────────────────────
 page = st.session_state.current_page
