@@ -15,283 +15,420 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ── CSS for Perfect Centered Layout ──────────────────────────────────────────
+# ── Premium Dark Theme CSS ──────────────────────────────────────────────────
 st.markdown("""
 <style>
-/* Import Google Font */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
 
+/* Global Reset */
 * {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-/* Main App Background */
+/* Premium Dark Gradient Background */
 .stApp {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    background: radial-gradient(ellipse at 20% 30%, #1a1a2e, #0a0a15);
     background-attachment: fixed;
 }
 
-/* Main content - PERFECTLY CENTERED */
+/* Animated particles effect */
+.stApp::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        radial-gradient(circle at 10% 20%, rgba(100, 108, 255, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 90% 60%, rgba(167, 139, 250, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 50% 80%, rgba(240, 147, 251, 0.05) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Main content container */
 .main .block-container {
-    padding: 2rem 3rem !important;
-    max-width: 1000px !important;
+    padding: 2rem 2rem !important;
+    max-width: 1200px !important;
     margin: 0 auto !important;
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(18, 18, 35, 0.7);
     backdrop-filter: blur(20px);
-    border-radius: 28px;
-    margin-top: 2rem !important;
-    margin-bottom: 2rem !important;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 32px;
+    margin-top: 1.5rem !important;
+    margin-bottom: 1.5rem !important;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
 
 /* Hide Streamlit Branding */
 #MainMenu, footer, header { visibility: hidden; }
 
-/* Sidebar - COLLAPSIBLE with proper styling */
+/* ============ SIDEBAR STYLING ============ */
 [data-testid="stSidebar"] {
-    background: linear-gradient(180deg, rgba(15, 12, 41, 0.98) 0%, rgba(36, 36, 62, 0.98) 100%);
-    backdrop-filter: blur(20px);
-    border-right: 1px solid rgba(255, 255, 255, 0.15);
-    transition: all 0.3s ease;
-}
-
-[data-testid="stSidebar"][aria-expanded="true"] {
-    min-width: 280px;
-    width: 280px;
-}
-
-[data-testid="stSidebar"][aria-expanded="false"] {
-    min-width: 0px;
-    width: 0px;
-    overflow: hidden;
+    background: linear-gradient(180deg, #0f0f1a 0%, #0a0a12 100%);
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 [data-testid="stSidebar"] * {
+    color: #e2e2f0 !important;
+}
+
+[data-testid="stSidebar"] .stMarkdown h1,
+[data-testid="stSidebar"] .stMarkdown h2,
+[data-testid="stSidebar"] .stMarkdown h3 {
     color: #ffffff !important;
 }
 
-/* Sidebar toggle button - VISIBLE AND CLICKABLE */
-[data-testid="collapsedControl"] {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    border-radius: 0 12px 12px 0;
-    padding: 10px 14px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    z-index: 999999;
-    position: fixed;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-}
-
-[data-testid="collapsedControl"]:hover {
-    background: linear-gradient(135deg, #764ba2, #667eea);
-    transform: translateY(-50%) scale(1.05);
-}
-
-/* Sidebar Content Padding */
-[data-testid="stSidebar"] .element-container {
-    padding: 0 0.75rem;
-}
-
-/* Sidebar Buttons */
+/* Sidebar buttons */
 [data-testid="stSidebar"] .stButton button {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
     text-align: left;
     padding: 0.7rem 1rem;
-    transition: all 0.3s ease;
+    transition: all 0.25s ease;
     font-weight: 500;
 }
 
 [data-testid="stSidebar"] .stButton button:hover {
-    background: rgba(255, 255, 255, 0.15);
-    transform: translateX(5px);
-    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(100, 108, 255, 0.15);
+    border-color: rgba(100, 108, 255, 0.4);
+    transform: translateX(4px);
 }
 
-/* Primary Button in Sidebar */
 [data-testid="stSidebar"] .stButton button[data-testid="baseButton-primary"] {
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: linear-gradient(135deg, #6468ff, #a78bfa);
     border: none;
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 4px 12px rgba(100, 108, 255, 0.3);
 }
 
-/* Cards */
+/* ============ CARD STYLES ============ */
 .agent-card {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.05));
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: 16px;
     padding: 1rem 1.25rem;
     margin-bottom: 0.75rem;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .agent-card:hover {
     transform: translateY(-3px);
-    border-color: rgba(255, 255, 255, 0.3);
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.08));
+    border-color: rgba(100, 108, 255, 0.4);
+    background: linear-gradient(135deg, rgba(100, 108, 255, 0.08), rgba(167, 139, 250, 0.04));
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 }
 
 .agent-card h4 {
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: 700;
     margin-bottom: 0.25rem;
-    background: linear-gradient(135deg, #fff, #f093fb);
+    background: linear-gradient(135deg, #ffffff, #c4b5fd);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 .agent-card p {
     font-size: 0.8rem;
-    color: rgba(255, 255, 255, 0.7);
+    color: #a0a0c0;
     margin: 0;
 }
 
-/* Metric Cards */
+/* ============ METRIC CARDS ============ */
 .metric-card {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    background: linear-gradient(135deg, rgba(100, 108, 255, 0.1), rgba(167, 139, 250, 0.05));
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 16px;
-    padding: 1rem;
+    border: 1px solid rgba(100, 108, 255, 0.2);
+    border-radius: 20px;
+    padding: 1.2rem;
     text-align: center;
     transition: all 0.3s ease;
 }
 
 .metric-card:hover {
-    transform: translateY(-2px);
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.08));
+    transform: translateY(-4px);
+    border-color: rgba(100, 108, 255, 0.5);
+    background: linear-gradient(135deg, rgba(100, 108, 255, 0.15), rgba(167, 139, 250, 0.08));
 }
 
 .metric-value {
-    font-size: 2rem;
+    font-size: 2.2rem;
     font-weight: 800;
-    background: linear-gradient(135deg, #fff, #f093fb);
+    background: linear-gradient(135deg, #ffffff, #c4b5fd);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 .metric-label {
     font-size: 0.7rem;
-    color: rgba(255, 255, 255, 0.7);
+    color: #a0a0c0;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-top: 0.25rem;
+    letter-spacing: 0.08em;
+    margin-top: 0.5rem;
+    font-weight: 500;
 }
 
-/* Buttons */
+/* ============ BUTTON STYLES ============ */
 .stButton > button {
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: linear-gradient(135deg, #6468ff, #a78bfa);
     color: white;
     border: none;
-    border-radius: 12px;
+    border-radius: 14px;
     font-weight: 600;
     padding: 0.6rem 1.5rem;
     transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(100, 108, 255, 0.3);
 }
 
 .stButton > button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 8px 20px rgba(100, 108, 255, 0.4);
+    background: linear-gradient(135deg, #7c80ff, #b89bff);
 }
 
-/* Headers */
+/* Secondary button */
+.stButton > button[data-testid="baseButton-secondary"] {
+    background: rgba(255, 255, 255, 0.05);
+    box-shadow: none;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stButton > button[data-testid="baseButton-secondary"]:hover {
+    background: rgba(100, 108, 255, 0.15);
+    border-color: rgba(100, 108, 255, 0.4);
+}
+
+/* ============ TYPOGRAPHY ============ */
 h1 {
     font-size: 2.8rem !important;
     font-weight: 800 !important;
-    background: linear-gradient(135deg, #ffffff, #f093fb);
+    background: linear-gradient(135deg, #ffffff, #c4b5fd);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    background-clip: text;
     text-align: center;
     margin-bottom: 0.5rem !important;
+    letter-spacing: -0.02em;
 }
 
 h2 {
     font-size: 1.5rem !important;
     font-weight: 700 !important;
-    background: linear-gradient(135deg, #ffffff, #f093fb);
+    background: linear-gradient(135deg, #ffffff, #c4b5fd);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-top: 1rem !important;
+    margin-bottom: 0.75rem !important;
 }
 
 h3 {
     font-size: 1.2rem !important;
     font-weight: 600 !important;
-    color: rgba(255, 255, 255, 0.9) !important;
+    color: #e2e2f0 !important;
+    margin-bottom: 0.5rem !important;
 }
 
-/* Dataframe */
+p, .stMarkdown {
+    color: #c0c0e0;
+    line-height: 1.6;
+}
+
+/* ============ DATAFRAME STYLING ============ */
 [data-testid="stDataFrame"] {
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-/* Badges */
+[data-testid="stDataFrame"] table {
+    color: #e2e2f0;
+}
+
+/* ============ FILE UPLOADER ============ */
+[data-testid="stFileUploader"] {
+    background: rgba(255, 255, 255, 0.02);
+    border: 2px dashed rgba(100, 108, 255, 0.3);
+    border-radius: 20px;
+    padding: 2rem;
+    transition: all 0.3s ease;
+}
+
+[data-testid="stFileUploader"]:hover {
+    border-color: rgba(100, 108, 255, 0.6);
+    background: rgba(100, 108, 255, 0.05);
+}
+
+/* ============ EXPANDER ============ */
+[data-testid="stExpander"] {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+}
+
+[data-testid="stExpander"] details {
+    background: transparent;
+}
+
+/* ============ TABS ============ */
+.stTabs [data-baseweb="tab-list"] {
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 0.5rem;
+    border-radius: 60px;
+}
+
+.stTabs [data-baseweb="tab"] {
+    border-radius: 50px;
+    padding: 0.5rem 1.5rem;
+    font-weight: 500;
+    color: #a0a0c0;
+}
+
+.stTabs [aria-selected="true"] {
+    background: linear-gradient(135deg, #6468ff, #a78bfa);
+    color: white;
+}
+
+/* ============ PROGRESS BAR ============ */
+.stProgress > div > div {
+    background: linear-gradient(90deg, #6468ff, #a78bfa);
+}
+
+/* ============ ALERTS ============ */
+.stAlert {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px !important;
+    color: #e2e2f0 !important;
+}
+
+.stAlert [data-testid="stMarkdown"] {
+    color: #e2e2f0 !important;
+}
+
+/* ============ BADGES ============ */
 .badge-ready {
-    background: linear-gradient(135deg, #00b09b, #96c93d);
+    background: linear-gradient(135deg, #10b981, #34d399);
     padding: 4px 12px;
     border-radius: 20px;
     font-size: 0.7rem;
     font-weight: 600;
     display: inline-block;
+    color: white !important;
 }
 
 .badge-waiting {
-    background: linear-gradient(135deg, #f2994a, #f2c94c);
+    background: linear-gradient(135deg, #f59e0b, #fbbf24);
     padding: 4px 12px;
     border-radius: 20px;
     font-size: 0.7rem;
     font-weight: 600;
     display: inline-block;
+    color: white !important;
 }
 
-/* Divider */
+/* ============ DIVIDER ============ */
 hr {
     margin: 1.5rem 0;
     border: none;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
 }
 
-/* Expander */
-[data-testid="stExpander"] {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-}
-
-/* Center text utility */
-.text-center {
-    text-align: center;
-}
-
-/* File uploader */
-[data-testid="stFileUploader"] {
-    background: rgba(255, 255, 255, 0.05);
-    border: 2px dashed rgba(255, 255, 255, 0.3);
-    border-radius: 20px;
-    padding: 1rem;
-}
-
-/* Scrollbar */
+/* ============ SCROLLBAR ============ */
 ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
     border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: linear-gradient(135deg, #6468ff, #a78bfa);
     border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #7c80ff, #b89bff);
+}
+
+/* ============ CODE BLOCKS ============ */
+code, pre {
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 8px;
+    padding: 0.2rem 0.4rem;
+    font-family: 'Monaco', 'Menlo', monospace;
+    font-size: 0.85rem;
+    color: #c4b5fd;
+}
+
+/* ============ SELECT BOX ============ */
+[data-baseweb="select"] {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+}
+
+[data-baseweb="select"] * {
+    color: #e2e2f0;
+}
+
+/* ============ TEXT INPUT ============ */
+[data-testid="stTextInput"] input {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    color: #e2e2f0;
+}
+
+[data-testid="stTextInput"] input:focus {
+    border-color: #6468ff;
+    box-shadow: 0 0 0 2px rgba(100, 108, 255, 0.2);
+}
+
+/* ============ TEXT AREA ============ */
+[data-testid="stTextArea"] textarea {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    color: #e2e2f0;
+}
+
+/* ============ MULTISELECT ============ */
+[data-baseweb="tag"] {
+    background: rgba(100, 108, 255, 0.2);
+    border-radius: 8px;
+}
+
+/* ============ SLIDER ============ */
+[data-testid="stSlider"] {
+    color: #6468ff;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .main .block-container {
+        padding: 1rem !important;
+        margin: 0.5rem !important;
+    }
+    
+    h1 {
+        font-size: 2rem !important;
+    }
+    
+    .metric-value {
+        font-size: 1.5rem !important;
+    }
 }
 </style>
 """, unsafe_allow_html=True)
@@ -299,13 +436,12 @@ hr {
 # ── Session init ──────────────────────────────────────────────────────────────
 init_session()
 
-# ── Sidebar Navigation (Collapsible) ─────────────────────────────────────────
+# ── Sidebar Navigation ────────────────────────────────────────────────────────
 with st.sidebar:
     st.markdown("## 🤖 CSV Insight Agents")
     st.markdown("### AI-Powered Analysis")
     st.markdown("---")
     
-    # Navigation buttons
     pages = {
         "🏠 Home": "home",
         "🔍 Data Quality": "quality",
@@ -330,7 +466,6 @@ with st.sidebar:
     
     st.markdown("---")
     
-    # Data Status
     if is_data_loaded():
         df = get_df()
         st.markdown(f'<span class="badge-ready">✓ Data Loaded</span>', unsafe_allow_html=True)
