@@ -57,13 +57,23 @@ def render():
     df = get_df()
 
     # ── Model info ────────────────────────────────────────────────────────────
-    st.markdown(f"""
-    <div style="background:#1e1e2e;border:1px solid #2a2a4e;border-radius:8px;padding:0.7rem 1rem;margin-bottom:1rem;display:inline-block;">
-        <span style="color:#64748b;font-size:0.8rem;">🤖 Model: </span>
-        <code style="color:#a78bfa;font-size:0.8rem;">{get_active_model()}</code>
-        <span style="color:#34d399;font-size:0.75rem;margin-left:0.8rem;">✓ Free tier</span>
-    </div>
-    """, unsafe_allow_html=True)
+from utils.llm import get_active_model, PRIMARY_MODEL
+
+st.markdown(f"""
+<div style="background:linear-gradient(135deg,rgba(255,255,255,0.1),rgba(255,255,255,0.05));
+            backdrop-filter:blur(10px);
+            border:1px solid rgba(255,255,255,0.2);
+            border-radius:12px;
+            padding:0.7rem 1rem;
+            margin-bottom:1rem;
+            display:inline-block;">
+    <span style="color:rgba(255,255,255,0.8);font-size:0.8rem;">🤖 Model: </span>
+    <code style="color:#a78bfa;font-size:0.8rem;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:6px;">
+        {PRIMARY_MODEL}
+    </code>
+    <span style="color:#34d399;font-size:0.75rem;margin-left:0.8rem;">✓ OpenRouter</span>
+</div>
+""", unsafe_allow_html=True)
 
     # ── Insight type selector ─────────────────────────────────────────────────
     insight_type = st.selectbox(
