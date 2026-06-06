@@ -1,6 +1,11 @@
 import streamlit as st
 from utils.session import init_session, get_df, is_data_loaded
 import pandas as pd
+import sys
+import os
+
+# Add the current directory to path
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 # ── Page config ──────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -10,39 +15,22 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ── Modern CSS with Beautiful Background (from app (1).py) ──────────────────────
+# ── Modern CSS with Beautiful Background ──────────────────────────────────────
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
 
-/* Global Styles */
 * {
-    font-family: 'Poppins', 'Outfit', sans-serif;
+    font-family: 'Poppins', sans-serif;
 }
 
 /* Beautiful Animated Background */
 .stApp {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
     background-attachment: fixed;
-    position: relative;
 }
 
-.stApp::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: 
-        radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
-        radial-gradient(circle at 40% 40%, rgba(119, 198, 255, 0.2) 0%, transparent 50%);
-    pointer-events: none;
-    z-index: 0;
-}
-
-/* Main content area - Perfectly Centered */
+/* Main content area */
 .main .block-container {
     padding: 2rem 3rem !important;
     max-width: 1400px !important;
@@ -56,10 +44,10 @@ st.markdown("""
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Hide default Streamlit branding */
+/* Hide Streamlit branding */
 #MainMenu, footer, header { visibility: hidden; }
 
-/* Sidebar - Glass morphism */
+/* Sidebar */
 [data-testid="stSidebar"] {
     background: rgba(15, 12, 41, 0.95);
     backdrop-filter: blur(20px);
@@ -70,17 +58,17 @@ st.markdown("""
     color: #ffffff !important;
 }
 
-/* Modern Cards */
+/* Cards */
 .glass-card, .agent-card {
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 24px;
     padding: 1.5rem;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: all 0.4s ease;
 }
 
-.glass-card:hover, .agent-card:hover {
+.agent-card:hover {
     transform: translateY(-5px);
     border-color: rgba(255, 255, 255, 0.4);
 }
@@ -116,7 +104,7 @@ h1, h2, h3 {
     font-weight: 800;
 }
 
-/* Status Badges */
+/* Badges */
 .badge-ready {
     background: linear-gradient(135deg, #00b09b, #96c93d);
     padding: 4px 12px;
@@ -134,26 +122,9 @@ h1, h2, h3 {
     font-weight: 600;
 }
 
-/* Scrollbar */
-::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
-}
-
-::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    border-radius: 10px;
-}
-
-/* Dataframe styling */
+/* Dataframe */
 [data-testid="stDataFrame"] {
     background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
     border-radius: 16px;
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -169,7 +140,6 @@ h1, h2, h3 {
 .stTabs [data-baseweb="tab"] {
     border-radius: 50px;
     padding: 0.5rem 1.5rem;
-    font-weight: 500;
     color: rgba(255, 255, 255, 0.7);
 }
 
@@ -181,10 +151,8 @@ h1, h2, h3 {
 /* Metrics */
 [data-testid="stMetric"] {
     background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
     border-radius: 16px;
     padding: 1rem;
-    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 </style>
 """, unsafe_allow_html=True)
@@ -227,7 +195,6 @@ with st.sidebar:
 
     st.markdown("---")
     
-    # Data status
     if is_data_loaded():
         df = get_df()
         st.markdown(f'<span class="badge-ready">✓ Data Loaded</span>', unsafe_allow_html=True)
@@ -235,9 +202,6 @@ with st.sidebar:
         st.caption("rows")
         st.markdown(f"### {df.shape[1]}")
         st.caption("columns")
-        
-        with st.expander("📊 Quick Preview"):
-            st.dataframe(df.head(5), use_container_width=True)
     else:
         st.markdown('<span class="badge-waiting">⏳ No data yet</span>', unsafe_allow_html=True)
         st.caption("Upload a CSV on the Home page")
@@ -245,24 +209,28 @@ with st.sidebar:
 # ── Page router ───────────────────────────────────────────────────────────────
 page = st.session_state.current_page
 
-if page == "home":
-    from pages_content.home import render
-    render()
-elif page == "quality":
-    from pages_content.quality import render
-    render()
-elif page == "cleaning":
-    from pages_content.cleaning import render
-    render()
-elif page == "stats":
-    from pages_content.stats import render
-    render()
-elif page == "visualization":
-    from pages_content.visualization import render
-    render()
-elif page == "insights":
-    from pages_content.insights import render
-    render()
-elif page == "report":
-    from pages_content.report import render
-    render()
+try:
+    if page == "home":
+        from pages_content.home import render
+        render()
+    elif page == "quality":
+        from pages_content.quality import render
+        render()
+    elif page == "cleaning":
+        from pages_content.cleaning import render
+        render()
+    elif page == "stats":
+        from pages_content.stats import render
+        render()
+    elif page == "visualization":
+        from pages_content.visualization import render
+        render()
+    elif page == "insights":
+        from pages_content.insights import render
+        render()
+    elif page == "report":
+        from pages_content.report import render
+        render()
+except ImportError as e:
+    st.error(f"Error loading page: {e}")
+    st.info("Please make sure all page files exist in the 'pages_content' folder")
