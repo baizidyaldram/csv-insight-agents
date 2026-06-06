@@ -452,3 +452,12 @@ Keep the report professional, specific, and under 600 words. Use markdown format
             </div>
         </div>
         """, unsafe_allow_html=True)
+col1, col2 = st.columns(2)
+with col1:
+    if st.button("← Back to Insights", use_container_width=True):
+        st.session_state.current_page = "insights"
+        st.rerun()
+with col2:
+    if st.button("🏠 Back to Home", use_container_width=True):
+        st.session_state.current_page = "home"
+        st.rerun()
