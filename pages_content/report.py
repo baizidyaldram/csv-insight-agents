@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 from datetime import datetime
 from utils.session import get_df, get_raw_df, is_data_loaded
 from utils.llm import call_llm, get_active_model
@@ -54,8 +53,8 @@ def generate_markdown_report(df: pd.DataFrame, llm_report: str, file_name: str) 
     lines.append("---\n")
 
     lines.append("## 1. Dataset Overview\n")
-    lines.append(f"| Metric | Value |")
-    lines.append(f"|--------|-------|")
+    lines.append("| Metric | Value |")
+    lines.append("|--------|-------|")
     lines.append(f"| Rows | {df.shape[0]:,} |")
     lines.append(f"| Columns | {df.shape[1]} |")
     lines.append(f"| Numeric Columns | {len(numeric_cols)} |")
@@ -66,8 +65,8 @@ def generate_markdown_report(df: pd.DataFrame, llm_report: str, file_name: str) 
     if quality_report:
         lines.append("## 2. Data Quality\n")
         lines.append(f"**Overall Score: {quality_report['score']}/100**\n")
-        lines.append(f"| Dimension | Score |")
-        lines.append(f"|-----------|-------|")
+        lines.append("| Dimension | Score |")
+        lines.append("|-----------|-------|")
         lines.append(f"| Completeness | {quality_report['completeness']}% |")
         lines.append(f"| Validity | {quality_report['validity']}% |")
         lines.append(f"| Consistency | {quality_report['consistency']}% |")
@@ -75,8 +74,9 @@ def generate_markdown_report(df: pd.DataFrame, llm_report: str, file_name: str) 
 
     if numeric_cols:
         lines.append("## 3. Statistical Summary\n")
-        desc = df[numeric_cols].describe().round(3)
-        lines.append(desc.to_markdown())
+        # Convert dataframe to string without using tabulate
+        desc_df = df[numeric_cols].describe().round(3)
+        lines.append(desc_df.to_string())
         lines.append("")
 
     lines.append("## 4. AI-Generated Insights\n")
@@ -105,7 +105,7 @@ def render():
     df = get_df()
     file_name = st.session_state.get("file_name", "data.csv")
 
-    # ── Pipeline status ───────────────────────────────────────────────────────
+    # Pipeline status
     st.markdown("#### 📋 Pipeline Completion Status")
 
     steps = [
@@ -116,27 +116,34 @@ def render():
         ("💡 AI Insights", st.session_state.get("insights_text") is not None),
     ]
 
+    # Create status indicators
     cols = st.columns(len(steps))
     for col, (label, done) in zip(cols, steps):
-        col.markdown(
-            f'<div style="text-align:center;padding:0.5rem;background:#1e1e2e;border-radius:8px;border:1px solid {"#34d39944" if done else "#2a2a4e"};">'
-            f'<div style="font-size:1.2rem;">{"✅" if done else "⏳"}</div>'
-            f'<div style="font-size:0.75rem;color:{"#34d399" if done else "#64748b"};margin-top:0.3rem;">{label}</div>'
-            f'</div>',
-            unsafe_allow_html=True,
-        )
+        color = "#34d399" if done else "#64748b"
+        icon = "✅" if done else "⏳"
+        col.markdown(f"""
+        <div style="text-align:center;padding:0.5rem;background:rgba(255,255,255,0.05);
+                    border-radius:12px;border:1px solid {color}44;">
+            <div style="font-size:1.2rem;">{icon}</div>
+            <div style="font-size:0.7rem;color:{color};margin-top:0.3rem;">{label}</div>
+        </div>
+        """, unsafe_allow_html=True)
 
     completed = sum(1 for _, done in steps if done)
-    st.markdown(f"<br><p style='color:#64748b;font-size:0.85rem;'>{completed}/{len(steps)} steps completed. You can generate the report at any stage.</p>", unsafe_allow_html=True)
+    st.markdown(f"<br><p style='color:rgba(255,255,255,0.6);font-size:0.85rem;'>{completed}/{len(steps)} steps completed. You can generate the report at any stage.</p>", unsafe_allow_html=True)
 
     st.markdown("---")
 
-    # ── Report options ────────────────────────────────────────────────────────
+    # Report options
     st.markdown("#### ⚙️ Report Options")
-    report_tone = st.selectbox("Report tone", ["Executive (non-technical)", "Technical (data science)", "Mixed"])
+    report_tone = st.selectbox(
+        "Report tone",
+        ["Executive (non-technical)", "Technical (data science)", "Mixed"],
+        help="Choose the writing style for your report"
+    )
     include_recs = st.checkbox("Include recommendations section", value=True)
 
-    if st.button("▶ Generate Full Report", use_container_width=False):
+    if st.button("▶ Generate Full Report", use_container_width=False, type="primary"):
         context = build_full_context(df)
 
         system_prompt = f"""You are a senior data analyst writing a professional analysis report.
@@ -166,25 +173,33 @@ Keep the report professional, specific, and under 600 words."""
             full_report = generate_markdown_report(df, llm_report, file_name)
             st.session_state.full_report_md = full_report
 
-        st.success("✅ Report generated!")
+        st.success("✅ Report generated successfully!")
 
-    # ── Display report ────────────────────────────────────────────────────────
+    # Display report
     if st.session_state.get("report_text"):
         st.markdown("---")
         st.markdown("#### 📄 Generated Report")
 
+        # Display report in a nice container
         st.markdown(f"""
-        <div style="background:linear-gradient(135deg,#1e1e2e,#16213e);border:1px solid #2a2a4e;
-                    border-radius:12px;padding:1.8rem;line-height:1.8;color:#e0e0f0;font-size:0.93rem;">
+        <div style="background:linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
+                    backdrop-filter: blur(10px);
+                    border: 1px solid rgba(102,126,234,0.3);
+                    border-radius: 16px;
+                    padding: 1.8rem;
+                    line-height: 1.8;
+                    font-family: monospace;
+                    font-size: 0.9rem;
+                    white-space: pre-wrap;">
             {st.session_state.report_text.replace(chr(10), '<br>')}
         </div>
         """, unsafe_allow_html=True)
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # ── Download options ──────────────────────────────────────────────────
+        # Download options
         st.markdown("#### ⬇️ Download Report")
-        col1, col2 = st.columns(2)
+        col1, col2, col3 = st.columns(3)
 
         with col1:
             st.download_button(
@@ -197,24 +212,46 @@ Keep the report professional, specific, and under 600 words."""
 
         with col2:
             st.download_button(
-                "📝 Download as Plain Text (.txt)",
+                "📝 Download as Text (.txt)",
                 data=st.session_state.get("report_text", ""),
                 file_name=f"analysis_report_{file_name.replace('.csv','')}.txt",
                 mime="text/plain",
                 use_container_width=True,
             )
 
+        with col3:
+            # Create CSV download option for the cleaned data
+            csv_buffer = io.StringIO()
+            df.to_csv(csv_buffer, index=False)
+            st.download_button(
+                "📊 Download Cleaned CSV",
+                data=csv_buffer.getvalue(),
+                file_name="cleaned_data.csv",
+                mime="text/csv",
+                use_container_width=True,
+            )
+
+        # Completion message
         st.markdown("---")
         st.markdown("""
-        <div style="background:linear-gradient(135deg,#064e3b,#065f46);border:1px solid #34d39944;
-                    border-radius:10px;padding:1.2rem;text-align:center;">
+        <div style="background:linear-gradient(135deg, rgba(0,176,155,0.2), rgba(150,201,61,0.2));
+                    border:1px solid rgba(0,176,155,0.5);
+                    border-radius:16px;
+                    padding:1.2rem;
+                    text-align: center;">
             <p style="color:#34d399;font-weight:700;font-size:1.1rem;margin:0;">
                 🎉 Analysis Complete!
             </p>
-            <p style="color:#94a3b8;margin:0.5rem 0 0 0;font-size:0.88rem;">
-                You've run all 6 agents. Upload a new CSV on the Home page to start fresh.
+            <p style="color:rgba(255,255,255,0.7);margin:0.5rem 0 0 0;font-size:0.85rem;">
+                You've completed the analysis pipeline. Upload a new CSV on the Home page to start fresh.
             </p>
         </div>
         """, unsafe_allow_html=True)
+        
+        # Button to start over
+        if st.button("🏠 Return to Home", use_container_width=True):
+            st.session_state.current_page = "home"
+            st.rerun()
+            
     else:
-        st.info("Click **Generate Full Report** to compile the final analysis.")
+        st.info("Click **Generate Full Report** to compile the final analysis from all agents.")
