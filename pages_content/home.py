@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 from utils.session import set_df, is_data_loaded, get_df
-import time
 
 
 def render():
@@ -160,9 +159,7 @@ def render():
             try:
                 df = pd.read_csv(uploaded_file)
                 set_df(df, uploaded_file.name)
-                st.balloons()
                 st.success(f"✅ Successfully loaded **{uploaded_file.name}**!")
-                time.sleep(0.5)
                 st.rerun()
             except Exception as e:
                 st.error(f"Error: {e}")
@@ -191,9 +188,7 @@ def render():
                 })
                 sample_df['total_amount'] = (sample_df['quantity'] * sample_df['price']).round(2)
                 set_df(sample_df, "sample_orders.csv")
-                st.balloons()
                 st.success("✅ Sample dataset loaded (50 rows)!")
-                time.sleep(0.5)
                 st.rerun()
             except Exception as e:
                 st.error(f"Error: {e}")
