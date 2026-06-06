@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import io  
 from utils.session import get_df, get_raw_df, update_clean_df, is_data_loaded
 
 
@@ -11,6 +12,10 @@ def render():
 
     if not is_data_loaded():
         st.warning("No data loaded.")
+        # Add back button
+        if st.button("← Back to Home", use_container_width=False):
+            st.session_state.current_page = "home"
+            st.rerun()
         return
 
     df_raw = get_raw_df()
@@ -364,8 +369,20 @@ def render():
             mime="text/csv",
         )
         
-        if st.button("➡️ Next: Statistical Analysis", use_container_width=False):
-            st.session_state.current_page = "stats"
-            st.rerun()
+        col_btn1, col_btn2 = st.columns(2)
+        with col_btn1:
+            if st.button("← Back to Home", use_container_width=True):
+                st.session_state.current_page = "home"
+                st.rerun()
+        with col_btn2:
+            if st.button("➡️ Next: Statistical Analysis", use_container_width=True):
+                st.session_state.current_page = "stats"
+                st.rerun()
     else:
-        st.info("Configure cleaning options above and click **Run Data Cleaning** to begin.")
+        col_btn1, col_btn2 = st.columns(2)
+        with col_btn1:
+            if st.button("← Back to Home", use_container_width=True):
+                st.session_state.current_page = "home"
+                st.rerun()
+        with col_btn2:
+            st.info("Configure cleaning options above and click **Run Data Cleaning** to begin.")
