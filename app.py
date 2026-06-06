@@ -12,46 +12,45 @@ st.set_page_config(
     page_title="CSV Insight Agents | AI-Powered Data Analysis",
     page_icon="🤖",
     layout="wide",
-    initial_sidebar_state="expanded",  # This ensures sidebar is expanded by default
+    initial_sidebar_state="expanded",
 )
 
-# ── Modern CSS with Beautiful Background and FIXED Sidebar ──────────────────────
+# ── CSS for Proper Layout ──────────────────────────────────────────────────────
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+/* Import Google Font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 * {
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Inter', sans-serif;
 }
 
-/* Beautiful Animated Background */
+/* Main App Background */
 .stApp {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
     background-attachment: fixed;
 }
 
-/* Main content area */
+/* Main content - Proper spacing */
 .main .block-container {
-    padding: 2rem 3rem !important;
-    max-width: 1400px !important;
+    padding: 2rem 2rem !important;
+    max-width: 1200px !important;
     margin: 0 auto !important;
     background: rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(20px);
-    border-radius: 32px;
+    border-radius: 24px;
     margin-top: 1rem !important;
     margin-bottom: 1rem !important;
-    box-shadow: 0 25px 45px rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Hide default Streamlit branding */
+/* Hide Streamlit Branding */
 #MainMenu, footer, header { visibility: hidden; }
 
-/* Sidebar - FIXED - Always visible and accessible */
+/* Sidebar - FIXED WIDTH AND VISIBLE */
 [data-testid="stSidebar"] {
-    background: rgba(15, 12, 41, 0.95);
+    background: linear-gradient(180deg, rgba(15, 12, 41, 0.98) 0%, rgba(36, 36, 62, 0.98) 100%);
     backdrop-filter: blur(20px);
-    border-right: 1px solid rgba(255, 255, 255, 0.2);
+    border-right: 1px solid rgba(255, 255, 255, 0.15);
     min-width: 280px !important;
     width: 280px !important;
 }
@@ -60,49 +59,89 @@ st.markdown("""
     color: #ffffff !important;
 }
 
-/* Sidebar content */
-[data-testid="stSidebar"] .stMarkdown {
-    color: #ffffff;
+/* Sidebar Content Padding */
+[data-testid="stSidebar"] .element-container {
+    padding: 0 0.5rem;
 }
 
-/* Sidebar button styling */
+/* Sidebar Buttons */
 [data-testid="stSidebar"] .stButton button {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 12px;
     text-align: left;
+    padding: 0.6rem 1rem;
     transition: all 0.3s ease;
 }
 
 [data-testid="stSidebar"] .stButton button:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.15);
     transform: translateX(5px);
+    border-color: rgba(255, 255, 255, 0.3);
 }
 
-/* Primary button in sidebar */
-[data-testid="stSidebar"] .stButton button[data-baseweb="button"][data-testid="baseButton-secondary"] {
-    background: rgba(255, 255, 255, 0.1);
+/* Primary Button in Sidebar */
+[data-testid="stSidebar"] .stButton button[data-testid="baseButton-primary"] {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border: none;
 }
 
 /* Cards */
-.glass-card, .agent-card {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
+.agent-card, .glass-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.05));
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 24px;
-    padding: 1.5rem;
-    transition: all 0.4s ease;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 16px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 0.75rem;
+    transition: all 0.3s ease;
 }
 
 .agent-card:hover {
-    transform: translateY(-5px);
-    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-3px);
+    border-color: rgba(255, 255, 255, 0.3);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.08));
 }
 
 .agent-card h4 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
     background: linear-gradient(135deg, #fff, #f093fb);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    font-weight: 700;
+}
+
+.agent-card p {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0;
+}
+
+/* Metric Cards */
+.metric-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 16px;
+    padding: 1rem;
+    text-align: center;
+}
+
+.metric-value {
+    font-size: 2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #fff, #f093fb);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.metric-label {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.7);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 0.25rem;
 }
 
 /* Buttons */
@@ -110,31 +149,54 @@ st.markdown("""
     background: linear-gradient(135deg, #667eea, #764ba2);
     color: white;
     border: none;
-    border-radius: 50px;
+    border-radius: 12px;
     font-weight: 600;
-    padding: 0.6rem 2rem;
+    padding: 0.5rem 1.5rem;
     transition: all 0.3s ease;
 }
 
 .stButton > button:hover {
     transform: translateY(-2px);
-    background: linear-gradient(135deg, #764ba2, #667eea);
+    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
 }
 
 /* Headers */
-h1, h2, h3 {
+h1 {
+    font-size: 2.5rem !important;
+    font-weight: 800 !important;
     background: linear-gradient(135deg, #ffffff, #f093fb);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    font-weight: 800;
+    margin-bottom: 0.5rem !important;
+}
+
+h2 {
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    background: linear-gradient(135deg, #ffffff, #f093fb);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+h3 {
+    font-size: 1.2rem !important;
+    font-weight: 600 !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Dataframe */
+[data-testid="stDataFrame"] {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Badges */
 .badge-ready {
     background: linear-gradient(135deg, #00b09b, #96c93d);
     padding: 4px 12px;
-    border-radius: 50px;
-    font-size: 0.75rem;
+    border-radius: 20px;
+    font-size: 0.7rem;
     font-weight: 600;
     display: inline-block;
 }
@@ -142,70 +204,41 @@ h1, h2, h3 {
 .badge-waiting {
     background: linear-gradient(135deg, #f2994a, #f2c94c);
     padding: 4px 12px;
-    border-radius: 50px;
-    font-size: 0.75rem;
+    border-radius: 20px;
+    font-size: 0.7rem;
     font-weight: 600;
     display: inline-block;
 }
 
-/* Dataframe */
-[data-testid="stDataFrame"] {
+/* Divider */
+hr {
+    margin: 1.5rem 0;
+    border: none;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+}
+
+/* Expander */
+[data-testid="stExpander"] {
     background: rgba(255, 255, 255, 0.05);
-    border-radius: 16px;
     border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
 }
 
-/* Tabs */
-.stTabs [data-baseweb="tab-list"] {
-    gap: 0.5rem;
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
     background: rgba(255, 255, 255, 0.1);
-    padding: 0.5rem;
-    border-radius: 60px;
-    flex-wrap: wrap;
+    border-radius: 10px;
 }
 
-.stTabs [data-baseweb="tab"] {
-    border-radius: 50px;
-    padding: 0.5rem 1.5rem;
-    color: rgba(255, 255, 255, 0.7);
-    white-space: nowrap;
-}
-
-.stTabs [aria-selected="true"] {
+::-webkit-scrollbar-thumb {
     background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
-}
-
-/* Metrics */
-[data-testid="stMetric"] {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 16px;
-    padding: 1rem;
-}
-
-/* Fix for small screens */
-@media (max-width: 768px) {
-    [data-testid="stSidebar"] {
-        min-width: 250px !important;
-        width: 250px !important;
-    }
-    .main .block-container {
-        padding: 1rem !important;
-    }
-}
-
-/* Ensure sidebar toggle button is visible */
-[data-testid="collapsedControl"] {
-    display: flex !important;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    border-radius: 0 12px 12px 0;
-    padding: 8px 12px;
-    cursor: pointer;
-    z-index: 999999;
-}
-
-[data-testid="collapsedControl"]:hover {
-    background: linear-gradient(135deg, #764ba2, #667eea);
+    border-radius: 10px;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -213,69 +246,56 @@ h1, h2, h3 {
 # ── Session init ──────────────────────────────────────────────────────────────
 init_session()
 
-# ── Sidebar navigation ────────────────────────────────────────────────────────
-# Force sidebar to be visible
-st.sidebar.markdown("## 🤖 CSV Insight Agents")
-st.sidebar.markdown("### AI-Powered Analysis")
-st.sidebar.markdown("---")
-
-pages = {
-    "🏠 Home": "home",
-    "🔍 Data Quality": "quality",
-    "🧹 Data Cleaning": "cleaning",
-    "📊 Statistical Analysis": "stats",
-    "📈 Visualization": "visualization",
-    "💡 AI Insights": "insights",
-    "📄 Report": "report",
-}
-
-if "current_page" not in st.session_state:
-    st.session_state.current_page = "home"
-
-for label, key in pages.items():
-    is_active = st.session_state.current_page == key
-    disabled = key != "home" and not is_data_loaded()
+# ── Sidebar Navigation ────────────────────────────────────────────────────────
+with st.sidebar:
+    st.markdown("## 🤖 CSV Insight Agents")
+    st.markdown("### AI-Powered Analysis")
+    st.markdown("---")
     
-    # Use columns for better spacing
-    col1, col2 = st.sidebar.columns([1, 4])
-    with col1:
-        if is_active:
-            st.markdown("▶")
-        else:
-            st.markdown("&nbsp;&nbsp;")
-    with col2:
-        if st.button(
-            label,
-            key=f"nav_{key}",
-            use_container_width=True,
-            disabled=disabled,
-            type="primary" if is_active else "secondary",
-        ):
+    # Navigation buttons
+    pages = {
+        "🏠 Home": "home",
+        "🔍 Data Quality": "quality",
+        "🧹 Data Cleaning": "cleaning",
+        "📊 Statistical Analysis": "stats",
+        "📈 Visualization": "visualization",
+        "💡 AI Insights": "insights",
+        "📄 Report": "report",
+    }
+    
+    if "current_page" not in st.session_state:
+        st.session_state.current_page = "home"
+    
+    for label, key in pages.items():
+        is_active = st.session_state.current_page == key
+        disabled = key != "home" and not is_data_loaded()
+        
+        button_type = "primary" if is_active else "secondary"
+        if st.button(label, key=f"nav_{key}", use_container_width=True, disabled=disabled, type=button_type):
             st.session_state.current_page = key
             st.rerun()
-
-st.sidebar.markdown("---")
-
-# Data status in sidebar
-if is_data_loaded():
-    df = get_df()
-    st.sidebar.markdown(f'<span class="badge-ready">✓ Data Loaded</span>', unsafe_allow_html=True)
-    st.sidebar.markdown(f"### {df.shape[0]:,}")
-    st.sidebar.caption("rows")
-    st.sidebar.markdown(f"### {df.shape[1]}")
-    st.sidebar.caption("columns")
     
-    with st.sidebar.expander("📊 Quick Preview"):
-        st.dataframe(df.head(5), use_container_width=True)
-else:
-    st.sidebar.markdown('<span class="badge-waiting">⏳ No data yet</span>', unsafe_allow_html=True)
-    st.sidebar.caption("Upload a CSV on the Home page")
+    st.markdown("---")
+    
+    # Data Status
+    if is_data_loaded():
+        df = get_df()
+        st.markdown(f'<span class="badge-ready">✓ Data Loaded</span>', unsafe_allow_html=True)
+        st.markdown(f"### {df.shape[0]:,}")
+        st.caption("rows")
+        st.markdown(f"### {df.shape[1]}")
+        st.caption("columns")
+        
+        with st.expander("📊 Quick Preview"):
+            st.dataframe(df.head(3), use_container_width=True)
+    else:
+        st.markdown(f'<span class="badge-waiting">⏳ No Data</span>', unsafe_allow_html=True)
+        st.caption("Upload a CSV to begin")
+    
+    st.markdown("---")
+    st.caption("💡 Tip: Click the arrow ◀ to collapse sidebar")
 
-# Add a refresh/hint for sidebar
-st.sidebar.markdown("---")
-st.sidebar.caption("💡 Click the arrow ◀ on the left edge to collapse/expand sidebar")
-
-# ── Main content area ─────────────────────────────────────────────────────────
+# ── Page Router ───────────────────────────────────────────────────────────────
 page = st.session_state.current_page
 
 try:
@@ -301,17 +321,5 @@ try:
         from pages_content.report import render
         render()
 except ImportError as e:
-    st.error(f"Error loading page: {e}")
-    st.info("Please make sure all page files exist in the 'pages_content' folder")
-    st.code("""
-    Required files:
-    pages_content/
-    ├── __init__.py
-    ├── home.py
-    ├── quality.py
-    ├── cleaning.py
-    ├── stats.py
-    ├── visualization.py
-    ├── insights.py
-    └── report.py
-    """)
+    st.error(f"Page not found: {e}")
+    st.info("Please ensure all page files exist in the 'pages_content' folder")
