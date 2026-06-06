@@ -8,7 +8,7 @@ import re
 
 
 def build_full_context(df: pd.DataFrame) -> str:
-    """Build comprehensive context for the report with safe error handling."""
+    """Build comprehensive context for the report."""
     numeric_cols = df.select_dtypes(include="number").columns.tolist()
     cat_cols = df.select_dtypes(include="object").columns.tolist()
 
@@ -73,7 +73,7 @@ def format_report_text(text: str) -> str:
     # Italic text
     text = re.sub(r'\*(.*?)\*', r'<em style="color: rgba(255,255,255,0.8);">\1</em>', text)
     
-    # Format tables (markdown tables to HTML)
+    # Format tables
     lines = text.split('\n')
     formatted_lines = []
     in_table = False
@@ -119,7 +119,7 @@ def format_report_text(text: str) -> str:
             formatted_lines.append(line)
     
     if in_table:
-        table_html += '</tbody></td></div>'
+        table_html += '</tbody></table></div>'
         formatted_lines.append(table_html)
     
     text = '\n'.join(formatted_lines)
@@ -141,7 +141,7 @@ def format_report_text(text: str) -> str:
 
 
 def generate_markdown_report(df: pd.DataFrame, llm_report: str, file_name: str) -> str:
-    """Generate complete markdown report with safe error handling."""
+    """Generate complete markdown report."""
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     numeric_cols = df.select_dtypes(include="number").columns.tolist()
     cat_cols = df.select_dtypes(include="object").columns.tolist()
@@ -184,7 +184,6 @@ def generate_markdown_report(df: pd.DataFrame, llm_report: str, file_name: str) 
     if quality_report:
         lines.append("## ✅ 2. Data Quality Assessment\n")
         
-        # Quality score gauge with safe defaults
         score = quality_report.get('score', 0)
         if score >= 85:
             grade = "🟢 Excellent"
@@ -224,6 +223,29 @@ def generate_markdown_report(df: pd.DataFrame, llm_report: str, file_name: str) 
     return "\n".join(lines)
 
 
+def export_to_csv(dataframe):
+    """Export dataframe to CSV format."""
+    return dataframe.to_csv(index=False)
+
+
+def export_to_excel(dataframe):
+    """Export dataframe to Excel format."""
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        dataframe.to_excel(writer, sheet_name="Report_Data", index=False)
+    return output.getvalue()
+
+
+def export_to_json(dataframe):
+    """Export dataframe to JSON format."""
+    return dataframe.to_json(orient="records", indent=2)
+
+
+def export_to_html(dataframe, title="Data Export"):
+    """Export dataframe to HTML format."""
+    return dataframe.to_html(index=False, border=0, classes='dataframe')
+
+
 def render():
     st.markdown("""
     <style>
@@ -251,12 +273,15 @@ def render():
 
     if not is_data_loaded():
         st.warning("⚠️ No data loaded. Please upload a CSV on the Home page first.")
+        if st.button("← Back to Home", use_container_width=False):
+            st.session_state.current_page = "home"
+            st.rerun()
         return
 
     df = get_df()
     file_name = st.session_state.get("file_name", "data.csv")
 
-    # Pipeline status with visual indicators
+    # Pipeline status
     st.markdown("### 📋 Pipeline Completion Status")
     
     steps = [
@@ -343,12 +368,10 @@ Keep the report professional, specific, and under 600 words. Use markdown format
                 llm_report = call_llm(user_prompt, system_prompt, max_tokens=1600)
                 st.session_state.report_text = llm_report
 
-                # Build full markdown report
                 full_report = generate_markdown_report(df, llm_report, file_name)
                 st.session_state.full_report_md = full_report
 
             st.success("✅ Report generated successfully!")
-            st.balloons()
         except Exception as e:
             st.error(f"Error generating report: {str(e)}")
             st.info("Please make sure you have completed the previous agents or try again.")
@@ -375,36 +398,71 @@ Keep the report professional, specific, and under 600 words. Use markdown format
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # Download options
-        st.markdown("### ⬇️ Export Options")
-        col_dl1, col_dl2, col_dl3 = st.columns(3)
+        # Export Options - Multi-format
+        st.markdown("### 📤 Export Options")
+        st.markdown("Download the cleaned data in your preferred format:")
+        
+        col_dl1, col_dl2, col_dl3, col_dl4 = st.columns(4)
 
         with col_dl1:
+            csv_data = export_to_csv(df)
             st.download_button(
-                "📄 Download Markdown",
+                "📄 CSV",
+                data=csv_data,
+                file_name=f"report_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                mime="text/csv",
+                use_container_width=True,
+            )
+
+        with col_dl2:
+            excel_data = export_to_excel(df)
+            st.download_button(
+                "📊 Excel",
+                data=excel_data,
+                file_name=f"report_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                use_container_width=True,
+            )
+
+        with col_dl3:
+            json_data = export_to_json(df)
+            st.download_button(
+                "📋 JSON",
+                data=json_data,
+                file_name=f"report_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
+                mime="application/json",
+                use_container_width=True,
+            )
+
+        with col_dl4:
+            html_data = export_to_html(df, title="Data Analysis Report")
+            st.download_button(
+                "🌐 HTML",
+                data=html_data,
+                file_name=f"report_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html",
+                mime="text/html",
+                use_container_width=True,
+            )
+
+        # Also download the report itself
+        st.markdown("### 📝 Report Downloads")
+        col_rep1, col_rep2 = st.columns(2)
+        
+        with col_rep1:
+            st.download_button(
+                "📄 Download Report (Markdown)",
                 data=st.session_state.get("full_report_md", ""),
                 file_name=f"analysis_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md",
                 mime="text/markdown",
                 use_container_width=True,
             )
-
-        with col_dl2:
+        
+        with col_rep2:
             st.download_button(
-                "📝 Download Text",
+                "📝 Download Report (Text)",
                 data=st.session_state.get("report_text", ""),
                 file_name=f"analysis_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
                 mime="text/plain",
-                use_container_width=True,
-            )
-
-        with col_dl3:
-            csv_buffer = io.StringIO()
-            df.to_csv(csv_buffer, index=False)
-            st.download_button(
-                "📊 Download CSV",
-                data=csv_buffer.getvalue(),
-                file_name="cleaned_data.csv",
-                mime="text/csv",
                 use_container_width=True,
             )
 
@@ -424,17 +482,17 @@ Keep the report professional, specific, and under 600 words. Use markdown format
         </div>
         """, unsafe_allow_html=True)
         
-        # Action buttons
-        col_act1, col_act2, col_act3 = st.columns(3)
-        with col_act1:
+        # Navigation buttons
+        col_nav1, col_nav2, col_nav3 = st.columns(3)
+        with col_nav1:
             if st.button("🏠 Start New Analysis", use_container_width=True):
                 st.session_state.current_page = "home"
                 st.rerun()
-        with col_act2:
+        with col_nav2:
             if st.button("🔄 Regenerate Report", use_container_width=True):
                 st.session_state.report_text = None
                 st.rerun()
-        with col_act3:
+        with col_nav3:
             if st.button("💡 Back to Insights", use_container_width=True):
                 st.session_state.current_page = "insights"
                 st.rerun()
@@ -452,12 +510,7 @@ Keep the report professional, specific, and under 600 words. Use markdown format
             </div>
         </div>
         """, unsafe_allow_html=True)
-col1, col2 = st.columns(2)
-with col1:
-    if st.button("← Back to Insights", use_container_width=True):
-        st.session_state.current_page = "insights"
-        st.rerun()
-with col2:
-    if st.button("🏠 Back to Home", use_container_width=True):
-        st.session_state.current_page = "home"
-        st.rerun()
+        
+        if st.button("← Back to Home", use_container_width=True):
+            st.session_state.current_page = "home"
+            st.rerun()
