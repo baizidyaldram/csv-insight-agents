@@ -47,7 +47,7 @@ def build_data_summary(df: pd.DataFrame) -> str:
 
 
 def format_ai_response(text: str) -> str:
-    """Format AI response with better HTML styling - FIXED table formatting."""
+    """Format AI response with better HTML styling."""
     
     # First, preserve code blocks if any
     code_blocks = []
@@ -68,27 +68,23 @@ def format_ai_response(text: str) -> str:
     # Italic text
     text = re.sub(r'\*(.*?)\*', r'<em style="color: rgba(255,255,255,0.8);">\1</em>', text)
     
-    # Handle tables - IMPROVED: don't add icons to table cells
+    # Handle tables
     lines = text.split('\n')
     formatted_lines = []
     in_table = False
     table_header_detected = False
     
     for line in lines:
-        # Check if line is a markdown table row
         if '|' in line and line.strip().startswith('|'):
             if not in_table:
                 in_table = True
                 table_html = '<div style="overflow-x: auto; margin: 1.2rem 0;"><table style="width: 100%; border-collapse: collapse; background: rgba(0,0,0,0.2); border-radius: 12px; overflow: hidden;">'
             
-            # Skip separator lines (|---|)
             if re.match(r'^\|[\s\-:|]+\|$', line.strip()):
                 continue
             
-            # Process table row
             cells = [cell.strip() for cell in line.split('|')[1:-1]]
             
-            # Determine if this is a header row (look for bold markers or position)
             is_header = False
             if not table_header_detected and any(cell.startswith('**') or cell.endswith('**') or cell.upper() == cell for cell in cells):
                 is_header = True
@@ -98,7 +94,6 @@ def format_ai_response(text: str) -> str:
                 table_html += '<thead style="background: linear-gradient(135deg, rgba(102,126,234,0.3), rgba(118,75,162,0.3));">'
                 table_html += '<tr>'
                 for cell in cells:
-                    # Clean up cell content - remove markdown bold markers
                     cell_clean = re.sub(r'\*\*(.*?)\*\*', r'\1', cell)
                     table_html += f'<th style="border: 1px solid rgba(255,255,255,0.2); padding: 0.75rem; text-align: left; font-weight: 700; color: #f093fb;">{cell_clean}</th>'
                 table_html += '</tr>'
@@ -106,7 +101,6 @@ def format_ai_response(text: str) -> str:
             else:
                 table_html += '<tr>'
                 for cell in cells:
-                    # Clean up cell content - remove icons and markdown
                     cell_clean = re.sub(r'[📊📈📉🔍✅❌⚠️💡🚀👥⚙️📋]', '', cell)
                     cell_clean = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', cell_clean)
                     table_html += f'<td style="border: 1px solid rgba(255,255,255,0.15); padding: 0.6rem; color: rgba(255,255,255,0.85);">{cell_clean}</td>'
@@ -120,7 +114,6 @@ def format_ai_response(text: str) -> str:
                 table_html = ""
             formatted_lines.append(line)
     
-    # Close any open table
     if in_table:
         table_html += '</tbody></table></div>'
         formatted_lines.append(table_html)
@@ -130,27 +123,21 @@ def format_ai_response(text: str) -> str:
     # Format bullet points
     def format_bullet_point(match):
         content = match.group(1)
-        # Check if it's a numbered list
         if match.group(0).strip().startswith(tuple('123456789')):
             return f'<li style="margin-bottom: 0.4rem; color: rgba(255,255,255,0.9);">{content}</li>'
         else:
             return f'<li style="margin-bottom: 0.4rem; color: rgba(255,255,255,0.9);">• {content}</li>'
     
-    # Match bullet points
     text = re.sub(r'^[\-\*•]\s+(.*?)$', format_bullet_point, text, flags=re.MULTILINE)
     text = re.sub(r'^[0-9]+\.\s+(.*?)$', format_bullet_point, text, flags=re.MULTILINE)
     
-    # Wrap consecutive list items
     text = re.sub(r'(<li.*?>.*?</li>\n?)+', r'<ul style="margin: 0.8rem 0; padding-left: 1.5rem; list-style-type: none;">\g<0></ul>', text, flags=re.DOTALL)
     
-    # Format horizontal rules
     text = re.sub(r'^---$', r'<hr style="margin: 1.5rem 0; border: none; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);">', text, flags=re.MULTILINE)
     
-    # Restore code blocks
     for i, block in enumerate(code_blocks):
         text = text.replace(f"__CODE_BLOCK_{i}__", block)
     
-    # Add line breaks for better spacing
     text = text.replace('\n\n', '<br>')
     text = re.sub(r'<br>\s*<h', '<h', text)
     text = re.sub(r'</h\d>\s*<br>', '</h2>', text)
@@ -165,6 +152,9 @@ def render():
 
     if not is_data_loaded():
         st.warning("No data loaded. Please upload a CSV on the Home page first.")
+        if st.button("← Back to Home"):
+            st.session_state.current_page = "home"
+            st.rerun()
         return
 
     df = get_df()
@@ -185,7 +175,7 @@ def render():
     </div>
     """, unsafe_allow_html=True)
 
-    # Insight type selector with icons
+    # Insight type selector
     insight_options = {
         "General business insights": "📊",
         "Anomalies and red flags": "⚠️",
@@ -259,11 +249,10 @@ Use markdown formatting for better readability but avoid emojis inside table cel
             st.session_state.insights_text = response
             st.session_state.insights_type = insight_type
 
-    # Display insights with better formatting
+    # Display insights
     if st.session_state.get("insights_text"):
         st.markdown("---")
         
-        # Header with icon
         insight_icon = insight_options.get(st.session_state.get('insights_type', ''), "💡")
         st.markdown(f"""
         <div style="text-align: center; margin-bottom: 1.5rem;">
@@ -272,7 +261,6 @@ Use markdown formatting for better readability but avoid emojis inside table cel
         </div>
         """, unsafe_allow_html=True)
         
-        # Format and display the response
         formatted_response = format_ai_response(st.session_state.insights_text)
         
         st.markdown(f"""
@@ -288,7 +276,7 @@ Use markdown formatting for better readability but avoid emojis inside table cel
         """, unsafe_allow_html=True)
         
         # Action buttons
-        col1, col2, col3, col4 = st.columns([1, 1, 1, 1])
+        col1, col2, col3, col4 = st.columns(4)
         
         with col1:
             st.download_button(
@@ -313,7 +301,7 @@ Use markdown formatting for better readability but avoid emojis inside table cel
                 st.session_state.current_page = "report"
                 st.rerun()
 
-        # Custom question section
+        # IMPROVED Follow-up Question Section
         st.markdown("---")
         st.markdown("### ❓ Ask a Follow-up Question")
         
@@ -321,7 +309,7 @@ Use markdown formatting for better readability but avoid emojis inside table cel
         with col_q1:
             custom_q = st.text_input(
                 "",
-                placeholder="Example: What is the correlation between age and heart disease?",
+                placeholder="Example: What are the top 3 actionable recommendations from this data?",
                 label_visibility="collapsed",
                 key="custom_question"
             )
@@ -334,21 +322,42 @@ Use markdown formatting for better readability but avoid emojis inside table cel
 
 Question: {custom_q}
 
-Answer concisely and specifically using the data above. Use markdown formatting."""
-                    with st.spinner("Thinking..."):
-                        answer = call_llm(prompt, max_tokens=600)
+Answer the question in a clear, well-structured format. Use markdown for better readability:
+- Use **bold** for important numbers and metrics
+- Use bullet points for lists
+- Use numbered steps for action items
+- Keep the answer concise but informative (max 300 words)"""
+
+                    with st.spinner("💭 Generating answer..."):
+                        answer = call_llm(prompt, max_tokens=800)
+                        
+                        # Clean and format the answer
+                        answer = answer.replace('**', '<strong>').replace('**', '</strong>')
+                        answer = answer.replace('###', '<h4 style="color: #f093fb; margin: 0.5rem 0 0.25rem 0;">')
+                        answer = answer.replace('\n\n', '<br><br>')
+                        answer = answer.replace('- ', '• ')
+                        
+                        # Convert numbered lists
+                        answer = re.sub(r'(\d+)\.\s+', r'<strong>\1.</strong> ', answer)
+                        
                         st.markdown(f"""
-                        <div style="background:rgba(102,126,234,0.1);
-                                    border-left: 4px solid #667eea;
+                        <div style="background:linear-gradient(135deg, rgba(100,108,255,0.12), rgba(167,139,250,0.06));
+                                    border-left: 4px solid #6468ff;
                                     border-radius: 12px;
-                                    padding: 1rem;
-                                    margin-top: 0.5rem;">
-                            <div style="color: #a78bfa; font-weight: 600; margin-bottom: 0.5rem;">💬 Answer:</div>
-                            {answer.replace(chr(10), '<br>')}
+                                    padding: 1.2rem;
+                                    margin-top: 0.75rem;
+                                    box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+                                <span style="font-size: 1.2rem;">💬</span>
+                                <span style="color: #a78bfa; font-weight: 700; font-size: 0.9rem;">Answer:</span>
+                            </div>
+                            <div style="color: rgba(255,255,255,0.9); line-height: 1.7; font-size: 0.9rem;">
+                                {answer}
+                            </div>
                         </div>
                         """, unsafe_allow_html=True)
                 else:
-                    st.warning("Please enter a question.")
+                    st.warning("⚠️ Please enter a question.")
 
         # Disclaimer
         st.markdown("---")
@@ -363,9 +372,20 @@ Answer concisely and specifically using the data above. Use markdown formatting.
             </p>
         </div>
         """, unsafe_allow_html=True)
+        
+        # Navigation buttons
+        col_nav1, col_nav2 = st.columns(2)
+        with col_nav1:
+            if st.button("← Back to Visualization", use_container_width=True):
+                st.session_state.current_page = "visualization"
+                st.rerun()
+        with col_nav2:
+            if st.button("➡️ Proceed to Report", use_container_width=True):
+                st.session_state.current_page = "report"
+                st.rerun()
 
     else:
-        # Empty state with better styling
+        # Empty state
         st.markdown("""
         <div style="text-align: center; padding: 3rem 2rem;">
             <div style="font-size: 4rem; margin-bottom: 1rem;">🧠</div>
@@ -377,3 +397,7 @@ Answer concisely and specifically using the data above. Use markdown formatting.
             </div>
         </div>
         """, unsafe_allow_html=True)
+        
+        if st.button("← Back to Home"):
+            st.session_state.current_page = "home"
+            st.rerun()
