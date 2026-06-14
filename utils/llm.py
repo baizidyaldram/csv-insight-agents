@@ -4,11 +4,11 @@ import streamlit as st
 
 OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
 
-# Model settings
-PRIMARY_MODEL = "gpt-oss-120b"
+# Model settings - using reliable models
+PRIMARY_MODEL = "mistralai/mistral-7b-instruct:free"
 FALLBACK_MODELS = [
     "gryphe/mythomax-l2-13b:free",
-    "mistralai/mistral-7b-instruct:free",
+    "openai/gpt-3.5-turbo",
 ]
 
 
@@ -27,10 +27,10 @@ def get_api_key():
 
 
 def call_llm(prompt, system="", model_index=0, max_tokens=1500):
-    """Call OpenRouter API."""
+    """Call OpenRouter API with better error handling."""
     api_key = get_api_key()
     if not api_key:
-        return "API key not found. Please add OPENROUTER_API_KEY to secrets."
+        return "⚠️ API key not found. Please add your OpenRouter API key in the sidebar to enable AI features."
 
     # Select model
     if model_index == 0:
@@ -48,6 +48,8 @@ def call_llm(prompt, system="", model_index=0, max_tokens=1500):
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
+        "HTTP-Referer": "https://csv-insight-agents.streamlit.app",
+        "X-Title": "CSV Insight Agents",
     }
 
     payload = {
@@ -61,23 +63,29 @@ def call_llm(prompt, system="", model_index=0, max_tokens=1500):
         response = requests.post(OPENROUTER_API_URL, headers=headers, json=payload, timeout=60)
         
         if response.status_code == 401:
-            return "Invalid API key. Please check your OpenRouter API key."
+            return "❌ Invalid API key. Please check your OpenRouter API key."
+        elif response.status_code == 429:
+            return "⚠️ Rate limit exceeded. Please try again in a few moments."
         elif response.status_code == 404:
             if model_index == 0:
                 return call_llm(prompt, system, model_index + 1, max_tokens)
-            return f"Model {model} not found. Trying fallback models."
+            return f"⚠️ Model {model} not available. Using fallback model."
         elif response.status_code == 200:
             data = response.json()
             return data["choices"][0]["message"]["content"].strip()
         else:
             if model_index < len(FALLBACK_MODELS):
                 return call_llm(prompt, system, model_index + 1, max_tokens)
-            return f"API error: {response.status_code}"
+            return f"❌ API error: {response.status_code} - {response.text[:200]}"
             
+    except requests.exceptions.Timeout:
+        return "⏰ Request timed out. Please try again."
+    except requests.exceptions.ConnectionError:
+        return "🌐 Connection error. Please check your internet connection."
     except Exception as e:
         if model_index < len(FALLBACK_MODELS):
             return call_llm(prompt, system, model_index + 1, max_tokens)
-        return f"Error: {str(e)}"
+        return f"❌ Error: {str(e)}"
 
 
 def get_active_model():
