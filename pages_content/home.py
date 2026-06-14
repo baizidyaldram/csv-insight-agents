@@ -27,9 +27,9 @@ def render():
         ("📊", "Statistical Analysis", "Descriptive stats, correlations & distributions"),
     ]
     
-   agents_right = [
+    agents_right = [
         ("📈", "Visualization Agent", "Interactive charts powered by Plotly"),
-        ("🤖", "Modeling & Evaluation Agent", "ML algorithms, predictions & SHAP analysis"),  # ADD THIS
+        ("🤖", "Modeling & Evaluation Agent", "ML algorithms, predictions & SHAP analysis"),
         ("💡", "AI Insights Agent", "LLM-powered business insights (OpenRouter)"),
         ("📄", "Report Agent", "Generate comprehensive analysis reports"),
     ]
@@ -80,6 +80,7 @@ def render():
             set_df(df, uploaded_file.name)
             st.balloons()
             st.success(f"✅ Successfully loaded **{uploaded_file.name}**!")
+            st.rerun()
         except Exception as e:
             st.error(f"Error: {e}")
     
@@ -106,6 +107,7 @@ def render():
                 set_df(sample_df, "sample_orders.csv")
                 st.balloons()
                 st.success("✅ Sample dataset loaded (50 rows)!")
+                st.rerun()
             except Exception as e:
                 st.error(f"Error: {e}")
     
@@ -156,7 +158,7 @@ def render():
         st.markdown("---")
         st.markdown("#### 🚀 Quick Actions")
         
-        col1, col2, col3 = st.columns(3)
+        col1, col2, col3, col4 = st.columns(4)
         with col1:
             if st.button("🔍 Quality Check", use_container_width=True):
                 st.session_state.current_page = "quality"
@@ -169,13 +171,17 @@ def render():
             if st.button("📊 Statistics", use_container_width=True):
                 st.session_state.current_page = "stats"
                 st.rerun()
+        with col4:
+            if st.button("🤖 Modeling", use_container_width=True):
+                st.session_state.current_page = "modeling"
+                st.rerun()
         
-        st.info("💡 **Pro Tip:** Navigate through the 6 agents in order for the best analysis experience!")
+        st.info("💡 **Pro Tip:** Navigate through the agents in order for the best analysis experience!")
     
     # Footer
     st.markdown("---")
     st.markdown("""
     <div style="text-align: center; padding: 1rem 0 0 0; color: rgba(255,255,255,0.4); font-size: 0.75rem;">
-        Powered by Streamlit | Plotly Visualizations | OpenRouter AI
+        Powered by Streamlit | Plotly Visualizations | XGBoost | OpenRouter AI
     </div>
     """, unsafe_allow_html=True)
