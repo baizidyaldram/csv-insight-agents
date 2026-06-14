@@ -4,12 +4,6 @@ import numpy as np
 from utils.session import set_df, is_data_loaded, get_df
 
 
-def navigate_to(page):
-    """Helper function to navigate to a specific page"""
-    st.session_state.current_page = page
-    st.rerun()
-
-
 def render():
     # Custom CSS
     st.markdown("""
@@ -30,28 +24,6 @@ def render():
     .hero-subtitle {
         color: var(--text-secondary);
         font-size: 0.9rem;
-    }
-    .upload-container {
-        background: var(--bg-card);
-        border: 2px dashed var(--border-color);
-        border-radius: 16px;
-        padding: 1.5rem;
-        text-align: center;
-        margin: 0.5rem 0 1.5rem 0;
-    }
-    .nav-button {
-        background: linear-gradient(135deg, #3B82F6, #10B981);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        padding: 0.5rem 1rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-    .nav-button:hover {
-        transform: translateY(-1px);
-        opacity: 0.9;
     }
     .success-banner {
         background: rgba(16, 185, 129, 0.1);
@@ -75,7 +47,7 @@ def render():
     st.markdown("---")
 
     # ============================================================
-    # SECTION 1: UPLOAD DATA (MOVED TO TOP)
+    # SECTION 1: UPLOAD DATA
     # ============================================================
     st.markdown("### 📁 Upload Your Data")
 
@@ -129,95 +101,104 @@ def render():
     # ============================================================
     # SECTION 2: AGENT PIPELINE ARCHITECTURE
     # ============================================================
-    st.markdown("## Agent Pipeline Architecture")
-    st.markdown("_Follow these steps in order for complete analysis_")
+    if is_data_loaded():
+        df = get_df()
+        
+        st.markdown("## Agent Pipeline Architecture")
+        st.markdown("_Follow these steps in order for complete analysis_")
 
-    # Create 2 rows of cards
-    col1, col2, col3, col4 = st.columns(4)
-    
-    with col1:
-        st.markdown("""
-        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem; text-align: center; margin-bottom: 0.75rem;">
-            <div style="font-size: 1.8rem; margin-bottom: 0.25rem;">🔍</div>
-            <div style="font-weight: 700;">1. Data Quality</div>
-            <div style="font-size: 0.7rem; color: var(--text-secondary);">Quality scoring & validation</div>
-        </div>
-        """, unsafe_allow_html=True)
-        if st.button("Go to Quality →", key="goto_quality_btn", use_container_width=True):
-            navigate_to("quality")
-    
-    with col2:
-        st.markdown("""
-        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem; text-align: center; margin-bottom: 0.75rem;">
-            <div style="font-size: 1.8rem; margin-bottom: 0.25rem;">🧹</div>
-            <div style="font-weight: 700;">2. Data Cleaning</div>
-            <div style="font-size: 0.7rem; color: var(--text-secondary);">Missing values & duplicates</div>
-        </div>
-        """, unsafe_allow_html=True)
-        if st.button("Go to Cleaning →", key="goto_cleaning_btn", use_container_width=True):
-            navigate_to("cleaning")
-    
-    with col3:
-        st.markdown("""
-        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem; text-align: center; margin-bottom: 0.75rem;">
-            <div style="font-size: 1.8rem; margin-bottom: 0.25rem;">📊</div>
-            <div style="font-weight: 700;">3. Statistics</div>
-            <div style="font-size: 0.7rem; color: var(--text-secondary);">Descriptive & correlations</div>
-        </div>
-        """, unsafe_allow_html=True)
-        if st.button("Go to Statistics →", key="goto_stats_btn", use_container_width=True):
-            navigate_to("stats")
-    
-    with col4:
-        st.markdown("""
-        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem; text-align: center; margin-bottom: 0.75rem;">
-            <div style="font-size: 1.8rem; margin-bottom: 0.25rem;">📈</div>
-            <div style="font-weight: 700;">4. Visualization</div>
-            <div style="font-size: 0.7rem; color: var(--text-secondary);">Interactive charts</div>
-        </div>
-        """, unsafe_allow_html=True)
-        if st.button("Go to Visualization →", key="goto_viz_btn", use_container_width=True):
-            navigate_to("visualization")
+        # Row 1
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown("""
+            <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem; text-align: center; margin-bottom: 0.75rem;">
+                <div style="font-size: 1.8rem; margin-bottom: 0.25rem;">🔍</div>
+                <div style="font-weight: 700;">1. Data Quality</div>
+                <div style="font-size: 0.7rem; color: var(--text-secondary);">Quality scoring & validation</div>
+            </div>
+            """, unsafe_allow_html=True)
+            # Use query params or direct link - simpler approach
+            if st.button("Go to Quality →", key="goto_quality", use_container_width=True):
+                st.session_state.current_page = "quality"
+                st.rerun()
+        
+        with col2:
+            st.markdown("""
+            <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem; text-align: center; margin-bottom: 0.75rem;">
+                <div style="font-size: 1.8rem; margin-bottom: 0.25rem;">🧹</div>
+                <div style="font-weight: 700;">2. Data Cleaning</div>
+                <div style="font-size: 0.7rem; color: var(--text-secondary);">Missing values & duplicates</div>
+            </div>
+            """, unsafe_allow_html=True)
+            if st.button("Go to Cleaning →", key="goto_cleaning", use_container_width=True):
+                st.session_state.current_page = "cleaning"
+                st.rerun()
+        
+        with col3:
+            st.markdown("""
+            <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem; text-align: center; margin-bottom: 0.75rem;">
+                <div style="font-size: 1.8rem; margin-bottom: 0.25rem;">📊</div>
+                <div style="font-weight: 700;">3. Statistics</div>
+                <div style="font-size: 0.7rem; color: var(--text-secondary);">Descriptive & correlations</div>
+            </div>
+            """, unsafe_allow_html=True)
+            if st.button("Go to Statistics →", key="goto_stats", use_container_width=True):
+                st.session_state.current_page = "stats"
+                st.rerun()
+        
+        with col4:
+            st.markdown("""
+            <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem; text-align: center; margin-bottom: 0.75rem;">
+                <div style="font-size: 1.8rem; margin-bottom: 0.25rem;">📈</div>
+                <div style="font-weight: 700;">4. Visualization</div>
+                <div style="font-size: 0.7rem; color: var(--text-secondary);">Interactive charts</div>
+            </div>
+            """, unsafe_allow_html=True)
+            if st.button("Go to Visualization →", key="goto_viz", use_container_width=True):
+                st.session_state.current_page = "visualization"
+                st.rerun()
 
-    # Second row
-    col1, col2, col3, col4 = st.columns(4)
-    
-    with col1:
-        st.markdown("""
-        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem; text-align: center; margin-bottom: 0.75rem;">
-            <div style="font-size: 1.8rem; margin-bottom: 0.25rem;">🤖</div>
-            <div style="font-weight: 700;">5. Modeling</div>
-            <div style="font-size: 0.7rem; color: var(--text-secondary);">ML algorithms & predictions</div>
-        </div>
-        """, unsafe_allow_html=True)
-        if st.button("Go to Modeling →", key="goto_modeling_btn", use_container_width=True):
-            navigate_to("modeling")
-    
-    with col2:
-        st.markdown("""
-        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem; text-align: center; margin-bottom: 0.75rem;">
-            <div style="font-size: 1.8rem; margin-bottom: 0.25rem;">💡</div>
-            <div style="font-weight: 700;">6. AI Insights</div>
-            <div style="font-size: 0.7rem; color: var(--text-secondary);">LLM-powered analysis</div>
-        </div>
-        """, unsafe_allow_html=True)
-        if st.button("Go to Insights →", key="goto_insights_btn", use_container_width=True):
-            navigate_to("insights")
-    
-    with col3:
-        st.markdown("""
-        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem; text-align: center; margin-bottom: 0.75rem;">
-            <div style="font-size: 1.8rem; margin-bottom: 0.25rem;">📄</div>
-            <div style="font-weight: 700;">7. Report</div>
-            <div style="font-size: 0.7rem; color: var(--text-secondary);">Comprehensive export</div>
-        </div>
-        """, unsafe_allow_html=True)
-        if st.button("Go to Report →", key="goto_report_btn", use_container_width=True):
-            navigate_to("report")
-    
-    with col4:
-        if is_data_loaded():
-            df = get_df()
+        # Row 2
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown("""
+            <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem; text-align: center; margin-bottom: 0.75rem;">
+                <div style="font-size: 1.8rem; margin-bottom: 0.25rem;">🤖</div>
+                <div style="font-weight: 700;">5. Modeling</div>
+                <div style="font-size: 0.7rem; color: var(--text-secondary);">ML algorithms & predictions</div>
+            </div>
+            """, unsafe_allow_html=True)
+            if st.button("Go to Modeling →", key="goto_modeling", use_container_width=True):
+                st.session_state.current_page = "modeling"
+                st.rerun()
+        
+        with col2:
+            st.markdown("""
+            <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem; text-align: center; margin-bottom: 0.75rem;">
+                <div style="font-size: 1.8rem; margin-bottom: 0.25rem;">💡</div>
+                <div style="font-weight: 700;">6. AI Insights</div>
+                <div style="font-size: 0.7rem; color: var(--text-secondary);">LLM-powered analysis</div>
+            </div>
+            """, unsafe_allow_html=True)
+            if st.button("Go to Insights →", key="goto_insights", use_container_width=True):
+                st.session_state.current_page = "insights"
+                st.rerun()
+        
+        with col3:
+            st.markdown("""
+            <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem; text-align: center; margin-bottom: 0.75rem;">
+                <div style="font-size: 1.8rem; margin-bottom: 0.25rem;">📄</div>
+                <div style="font-weight: 700;">7. Report</div>
+                <div style="font-size: 0.7rem; color: var(--text-secondary);">Comprehensive export</div>
+            </div>
+            """, unsafe_allow_html=True)
+            if st.button("Go to Report →", key="goto_report", use_container_width=True):
+                st.session_state.current_page = "report"
+                st.rerun()
+        
+        with col4:
             st.markdown(f"""
             <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 1rem; text-align: center; margin-bottom: 0.75rem;">
                 <div style="font-size: 1.8rem; margin-bottom: 0.25rem;">✅</div>
@@ -225,16 +206,30 @@ def render():
                 <div style="font-size: 0.7rem; color: #10B981;">{df.shape[0]:,} rows, {df.shape[1]} cols</div>
             </div>
             """, unsafe_allow_html=True)
-        else:
-            st.markdown("""
-            <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem; text-align: center; margin-bottom: 0.75rem;">
-                <div style="font-size: 1.8rem; margin-bottom: 0.25rem;">📁</div>
-                <div style="font-weight: 700;">Upload Data</div>
-                <div style="font-size: 0.7rem; color: var(--text-secondary);">Start here</div>
-            </div>
-            """, unsafe_allow_html=True)
-
-    st.markdown("---")
+        
+        st.markdown("---")
+        
+        # Data Preview
+        with st.expander("📊 Data Preview (First 5 rows)", expanded=False):
+            st.dataframe(df.head(5), use_container_width=True)
+    
+    else:
+        st.info("📌 **Ready to start?** Upload a CSV file above to begin the analysis pipeline.")
+        
+        # Show pipeline preview
+        st.markdown("""
+        ### 🧠 Analysis Pipeline (Available after upload)
+        
+        | Step | Tool | Description |
+        |------|------|-------------|
+        | 1 | 🔍 Data Quality | Automatic quality scoring |
+        | 2 | 🧹 Data Cleaning | Handle missing values & duplicates |
+        | 3 | 📊 Statistics | Descriptive stats & correlations |
+        | 4 | 📈 Visualization | Interactive Plotly charts |
+        | 5 | 🤖 Modeling | XGBoost, LightGBM, SHAP analysis |
+        | 6 | 💡 AI Insights | LLM-powered business insights |
+        | 7 | 📄 Report | Comprehensive downloadable report |
+        """, unsafe_allow_html=False)
 
     # ============================================================
     # SECTION 3: MACHINE LEARNING MODELING STRUCTURE
