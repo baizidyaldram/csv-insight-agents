@@ -80,7 +80,7 @@ def render():
             set_df(df, uploaded_file.name)
             st.balloons()
             st.success(f"✅ Successfully loaded **{uploaded_file.name}**!")
-            st.rerun()
+            # REMOVED: st.rerun() - this was causing the freeze
         except Exception as e:
             st.error(f"Error: {e}")
     
@@ -92,7 +92,6 @@ def render():
     with col2:
         if st.button("📦 Load Sample Dataset", use_container_width=True):
             try:
-                # Create sample dataset
                 np.random.seed(42)
                 sample_df = pd.DataFrame({
                     'order_id': range(1001, 1051),
@@ -107,7 +106,7 @@ def render():
                 set_df(sample_df, "sample_orders.csv")
                 st.balloons()
                 st.success("✅ Sample dataset loaded (50 rows)!")
-                st.rerun()
+                # REMOVED: st.rerun() - this was causing the freeze
             except Exception as e:
                 st.error(f"Error: {e}")
     
@@ -160,19 +159,19 @@ def render():
         
         col1, col2, col3, col4 = st.columns(4)
         with col1:
-            if st.button("🔍 Quality Check", use_container_width=True):
+            if st.button("🔍 Quality Check", key="btn_quality_home", use_container_width=True):
                 st.session_state.current_page = "quality"
                 st.rerun()
         with col2:
-            if st.button("🧹 Clean Data", use_container_width=True):
+            if st.button("🧹 Clean Data", key="btn_cleaning_home", use_container_width=True):
                 st.session_state.current_page = "cleaning"
                 st.rerun()
         with col3:
-            if st.button("📊 Statistics", use_container_width=True):
+            if st.button("📊 Statistics", key="btn_stats_home", use_container_width=True):
                 st.session_state.current_page = "stats"
                 st.rerun()
         with col4:
-            if st.button("🤖 Modeling", use_container_width=True):
+            if st.button("🤖 Modeling", key="btn_modeling_home", use_container_width=True):
                 st.session_state.current_page = "modeling"
                 st.rerun()
         
