@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import matplotlib.pyplot as plt
 from utils.session import get_df, is_data_loaded
 from utils.data_profiler import generate_data_profile, display_data_profile
 
