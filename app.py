@@ -3,14 +3,6 @@ from utils.session import init_session, get_df, is_data_loaded
 import pandas as pd
 import sys
 import os
-from datetime import datetime
-
-# Try to import psutil, but don't fail if not available
-try:
-    import psutil
-    PSUTIL_AVAILABLE = True
-except ImportError:
-    PSUTIL_AVAILABLE = False
 
 # Add the current directory to path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -23,31 +15,12 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ── Modern Theme CSS (Slate & Emerald) ──────────────────────────────────────
+# ── Premium Dark Theme CSS ──────────────────────────────────────────────────
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
 
-/* CSS Variables for Theming */
-:root {
-    --bg-primary: #0F172A;
-    --bg-secondary: #1E293B;
-    --bg-card: rgba(30, 41, 59, 0.7);
-    --text-primary: #F8FAFC;
-    --text-secondary: #94A3B8;
-    --accent-success: #10B981;
-    --accent-success-hover: #059669;
-    --accent-warning: #F59E0B;
-    --accent-error: #EF4444;
-    --accent-info: #3B82F6;
-    --border-color: #334155;
-    --border-radius-sm: 8px;
-    --border-radius-md: 12px;
-    --border-radius-lg: 16px;
-    --transition-speed: 200ms;
-}
-
-/* Global Styles */
+/* Global Reset */
 * {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     margin: 0;
@@ -55,31 +28,40 @@ st.markdown("""
     box-sizing: border-box;
 }
 
+/* Premium Dark Gradient Background */
 .stApp {
-    background: var(--bg-primary);
-    transition: background var(--transition-speed) ease;
+    background: radial-gradient(ellipse at 20% 30%, #1a1a2e, #0a0a15);
+    background-attachment: fixed;
+}
+
+/* Animated particles effect */
+.stApp::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        radial-gradient(circle at 10% 20%, rgba(100, 108, 255, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 90% 60%, rgba(167, 139, 250, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 50% 80%, rgba(240, 147, 251, 0.05) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
 }
 
 /* Main content container */
 .main .block-container {
-    padding: 1.5rem 2rem !important;
-    max-width: 1400px !important;
+    padding: 2rem 2rem !important;
+    max-width: 1200px !important;
     margin: 0 auto !important;
-}
-
-/* Glass morphism cards */
-.glass-card {
-    background: var(--bg-card);
-    backdrop-filter: blur(10px);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-lg);
-    padding: 1.25rem;
-    transition: all var(--transition-speed) ease;
-}
-
-.glass-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    background: rgba(18, 18, 35, 0.7);
+    backdrop-filter: blur(20px);
+    border-radius: 32px;
+    margin-top: 1.5rem !important;
+    margin-bottom: 1.5rem !important;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
 
 /* Hide Streamlit Branding */
@@ -87,117 +69,365 @@ st.markdown("""
 
 /* ============ SIDEBAR STYLING ============ */
 [data-testid="stSidebar"] {
-    background: var(--bg-secondary);
-    border-right: 1px solid var(--border-color);
-    transition: transform var(--transition-speed) ease;
+    background: linear-gradient(180deg, #0f0f1a 0%, #0a0a12 100%);
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 [data-testid="stSidebar"] * {
-    color: var(--text-primary) !important;
+    color: #e2e2f0 !important;
 }
 
-/* Sidebar navigation buttons */
+[data-testid="stSidebar"] .stMarkdown h1,
+[data-testid="stSidebar"] .stMarkdown h2,
+[data-testid="stSidebar"] .stMarkdown h3 {
+    color: #ffffff !important;
+}
+
+/* Sidebar buttons */
 [data-testid="stSidebar"] .stButton button {
-    background: transparent;
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-md);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
     text-align: left;
-    padding: 0.65rem 1rem;
-    transition: all var(--transition-speed) ease;
+    padding: 0.7rem 1rem;
+    transition: all 0.25s ease;
     font-weight: 500;
-    width: 100%;
 }
 
 [data-testid="stSidebar"] .stButton button:hover {
-    background: rgba(59, 130, 246, 0.1);
-    border-color: var(--accent-info);
+    background: rgba(100, 108, 255, 0.15);
+    border-color: rgba(100, 108, 255, 0.4);
     transform: translateX(4px);
 }
 
-/* Metric Cards */
+[data-testid="stSidebar"] .stButton button[data-testid="baseButton-primary"] {
+    background: linear-gradient(135deg, #6468ff, #a78bfa);
+    border: none;
+    box-shadow: 0 4px 12px rgba(100, 108, 255, 0.3);
+}
+
+/* ============ CARD STYLES ============ */
+.agent-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 16px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 0.75rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.agent-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(100, 108, 255, 0.4);
+    background: linear-gradient(135deg, rgba(100, 108, 255, 0.08), rgba(167, 139, 250, 0.04));
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.agent-card h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    background: linear-gradient(135deg, #ffffff, #c4b5fd);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.agent-card p {
+    font-size: 0.8rem;
+    color: #a0a0c0;
+    margin: 0;
+}
+
+/* ============ METRIC CARDS ============ */
 .metric-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-md);
-    padding: 1rem;
+    background: linear-gradient(135deg, rgba(100, 108, 255, 0.1), rgba(167, 139, 250, 0.05));
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(100, 108, 255, 0.2);
+    border-radius: 20px;
+    padding: 1.2rem;
     text-align: center;
-    transition: all var(--transition-speed) ease;
+    transition: all 0.3s ease;
+}
+
+.metric-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(100, 108, 255, 0.5);
+    background: linear-gradient(135deg, rgba(100, 108, 255, 0.15), rgba(167, 139, 250, 0.08));
 }
 
 .metric-value {
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--accent-success);
+    font-size: 2.2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #ffffff, #c4b5fd);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 .metric-label {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
+    font-size: 0.7rem;
+    color: #a0a0c0;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-top: 0.25rem;
+    letter-spacing: 0.08em;
+    margin-top: 0.5rem;
+    font-weight: 500;
 }
 
-/* Primary Button */
+/* ============ BUTTON STYLES ============ */
 .stButton > button {
-    background: linear-gradient(135deg, var(--accent-info), var(--accent-success));
+    background: linear-gradient(135deg, #6468ff, #a78bfa);
     color: white;
     border: none;
-    border-radius: var(--border-radius-md);
+    border-radius: 14px;
     font-weight: 600;
     padding: 0.6rem 1.5rem;
-    transition: all var(--transition-speed) ease;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(100, 108, 255, 0.3);
 }
 
 .stButton > button:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(100, 108, 255, 0.4);
+    background: linear-gradient(135deg, #7c80ff, #b89bff);
 }
 
-/* Status Badges */
-.badge-success {
-    background: rgba(16, 185, 129, 0.15);
-    color: var(--accent-success);
-    padding: 0.25rem 0.75rem;
+/* Secondary button */
+.stButton > button[data-testid="baseButton-secondary"] {
+    background: rgba(255, 255, 255, 0.05);
+    box-shadow: none;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stButton > button[data-testid="baseButton-secondary"]:hover {
+    background: rgba(100, 108, 255, 0.15);
+    border-color: rgba(100, 108, 255, 0.4);
+}
+
+/* ============ TYPOGRAPHY ============ */
+h1 {
+    font-size: 2.8rem !important;
+    font-weight: 800 !important;
+    background: linear-gradient(135deg, #ffffff, #c4b5fd);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-align: center;
+    margin-bottom: 0.5rem !important;
+    letter-spacing: -0.02em;
+}
+
+h2 {
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    background: linear-gradient(135deg, #ffffff, #c4b5fd);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-top: 1rem !important;
+    margin-bottom: 0.75rem !important;
+}
+
+h3 {
+    font-size: 1.2rem !important;
+    font-weight: 600 !important;
+    color: #e2e2f0 !important;
+    margin-bottom: 0.5rem !important;
+}
+
+p, .stMarkdown {
+    color: #c0c0e0;
+    line-height: 1.6;
+}
+
+/* ============ DATAFRAME STYLING ============ */
+[data-testid="stDataFrame"] {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+[data-testid="stDataFrame"] table {
+    color: #e2e2f0;
+}
+
+/* ============ FILE UPLOADER ============ */
+[data-testid="stFileUploader"] {
+    background: rgba(255, 255, 255, 0.02);
+    border: 2px dashed rgba(100, 108, 255, 0.3);
+    border-radius: 20px;
+    padding: 2rem;
+    transition: all 0.3s ease;
+}
+
+[data-testid="stFileUploader"]:hover {
+    border-color: rgba(100, 108, 255, 0.6);
+    background: rgba(100, 108, 255, 0.05);
+}
+
+/* ============ EXPANDER ============ */
+[data-testid="stExpander"] {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+}
+
+[data-testid="stExpander"] details {
+    background: transparent;
+}
+
+/* ============ TABS ============ */
+.stTabs [data-baseweb="tab-list"] {
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 0.5rem;
+    border-radius: 60px;
+}
+
+.stTabs [data-baseweb="tab"] {
+    border-radius: 50px;
+    padding: 0.5rem 1.5rem;
+    font-weight: 500;
+    color: #a0a0c0;
+}
+
+.stTabs [aria-selected="true"] {
+    background: linear-gradient(135deg, #6468ff, #a78bfa);
+    color: white;
+}
+
+/* ============ PROGRESS BAR ============ */
+.stProgress > div > div {
+    background: linear-gradient(90deg, #6468ff, #a78bfa);
+}
+
+/* ============ ALERTS ============ */
+.stAlert {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px !important;
+    color: #e2e2f0 !important;
+}
+
+.stAlert [data-testid="stMarkdown"] {
+    color: #e2e2f0 !important;
+}
+
+/* ============ BADGES ============ */
+.badge-ready {
+    background: linear-gradient(135deg, #10b981, #34d399);
+    padding: 4px 12px;
     border-radius: 20px;
     font-size: 0.7rem;
     font-weight: 600;
-    border: 1px solid rgba(16, 185, 129, 0.3);
+    display: inline-block;
+    color: white !important;
 }
 
-.badge-warning {
-    background: rgba(245, 158, 11, 0.15);
-    color: var(--accent-warning);
-    padding: 0.25rem 0.75rem;
+.badge-waiting {
+    background: linear-gradient(135deg, #f59e0b, #fbbf24);
+    padding: 4px 12px;
     border-radius: 20px;
     font-size: 0.7rem;
     font-weight: 600;
+    display: inline-block;
+    color: white !important;
 }
 
-/* Scrollbar */
+/* ============ DIVIDER ============ */
+hr {
+    margin: 1.5rem 0;
+    border: none;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+}
+
+/* ============ SCROLLBAR ============ */
 ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-    background: var(--bg-secondary);
+    background: rgba(255, 255, 255, 0.05);
     border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: var(--accent-info);
+    background: linear-gradient(135deg, #6468ff, #a78bfa);
     border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #7c80ff, #b89bff);
+}
+
+/* ============ CODE BLOCKS ============ */
+code, pre {
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 8px;
+    padding: 0.2rem 0.4rem;
+    font-family: 'Monaco', 'Menlo', monospace;
+    font-size: 0.85rem;
+    color: #c4b5fd;
+}
+
+/* ============ SELECT BOX ============ */
+[data-baseweb="select"] {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+}
+
+[data-baseweb="select"] * {
+    color: #e2e2f0;
+}
+
+/* ============ TEXT INPUT ============ */
+[data-testid="stTextInput"] input {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    color: #e2e2f0;
+}
+
+[data-testid="stTextInput"] input:focus {
+    border-color: #6468ff;
+    box-shadow: 0 0 0 2px rgba(100, 108, 255, 0.2);
+}
+
+/* ============ TEXT AREA ============ */
+[data-testid="stTextArea"] textarea {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    color: #e2e2f0;
+}
+
+/* ============ MULTISELECT ============ */
+[data-baseweb="tag"] {
+    background: rgba(100, 108, 255, 0.2);
+    border-radius: 8px;
+}
+
+/* ============ SLIDER ============ */
+[data-testid="stSlider"] {
+    color: #6468ff;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
     .main .block-container {
         padding: 1rem !important;
+        margin: 0.5rem !important;
+    }
+    
+    h1 {
+        font-size: 2rem !important;
     }
     
     .metric-value {
-        font-size: 1.5rem;
+        font-size: 1.5rem !important;
     }
 }
 </style>
@@ -249,7 +479,7 @@ with st.sidebar:
     report_ready = st.session_state.get("report_text") is not None
     
     agent_statuses = [
-        ("System Orchestrator", "Ready" if is_data_loaded() else "Waiting", "⚡"),
+        ("System Orchestrator", "Ready", "⚡"),
         ("Quality Agent", "Ready" if quality_ready else "Waiting", "🔍"),
         ("Cleaning Agent", "Ready" if cleaning_ready else "Waiting", "🧹"),
         ("Statistical Agent", "Ready" if stats_ready else "Waiting", "📊"),
@@ -260,12 +490,12 @@ with st.sidebar:
     ]
     
     for name, status, icon in agent_statuses:
-        badge_class = "badge-success" if status == "Ready" else "badge-warning"
+        status_color = "color:#34d399; background:rgba(52,211,153,0.12); border:1px solid rgba(52,211,153,0.2);" if status == "Ready" else "color:#64748b; background:rgba(148,163,184,0.06); border:1px solid rgba(148,163,184,0.15);"
         st.markdown(f"""
-        <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.5rem; margin-bottom: 0.25rem;">
-            <span style="font-size: 0.9rem;">{icon}</span>
-            <span style="font-size: 0.8rem; flex: 1; margin-left: 0.5rem;">{name}</span>
-            <span class="{badge_class}" style="font-size: 0.65rem;">{status}</span>
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.45rem 0.6rem; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.04); border-radius: 6px; margin-bottom: 0.3rem;">
+            <span style="font-size: 0.9rem; margin-right: 0.5rem;">{icon}</span>
+            <span style="font-size: 0.78rem; font-weight: 500; color: #94a3b8; flex-grow: 1;">{name}</span>
+            <span style="font-size: 0.68rem; font-weight: 600; padding: 2px 6px; border-radius: 4px; {status_color}">{status}</span>
         </div>
         """, unsafe_allow_html=True)
         
@@ -283,7 +513,7 @@ with st.sidebar:
 
     if is_data_loaded():
         df = get_df()
-        st.markdown(f'<span class="badge-success">✓ Data Loaded</span>', unsafe_allow_html=True)
+        st.markdown(f'<span class="badge-ready">✓ Data Loaded</span>', unsafe_allow_html=True)
         st.markdown(f"### {df.shape[0]:,}")
         st.caption("rows")
         st.markdown(f"### {df.shape[1]}")
@@ -292,7 +522,7 @@ with st.sidebar:
         with st.expander("📊 Quick Preview"):
             st.dataframe(df.head(3), use_container_width=True)
     else:
-        st.markdown(f'<span class="badge-warning">⏳ No Data</span>', unsafe_allow_html=True)
+        st.markdown(f'<span class="badge-waiting">⏳ No Data</span>', unsafe_allow_html=True)
         st.caption("Upload a CSV to begin")
     
     st.markdown("---")
