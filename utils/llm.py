@@ -13,7 +13,10 @@ FALLBACK_MODELS = [
 
 
 def get_api_key():
-    """Get API key from env or Streamlit secrets."""
+    """Get API key from session state, env, or Streamlit secrets."""
+    if "openrouter_api_key" in st.session_state and st.session_state.openrouter_api_key:
+        return st.session_state.openrouter_api_key
+        
     key = os.getenv("OPENROUTER_API_KEY")
     if not key:
         try:

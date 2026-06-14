@@ -16,6 +16,16 @@ def init_session():
         "current_page": "home",
         "stats_done": False,
         "viz_done": False,
+        # Modeling & Evaluation Agent states
+        "model_metrics": None,
+        "trained_model": None,
+        "model_features_list": None,
+        "model_target_col": None,
+        "model_scaler": None,
+        "model_task_type": None,
+        "model_encoded_categories": None,
+        "modeling_log": None,
+        "modeling_done": False,
     }
     for key, val in defaults.items():
         if key not in st.session_state:
@@ -35,6 +45,15 @@ def set_df(df: pd.DataFrame, file_name: str = "data.csv"):
     st.session_state.report_text = None
     st.session_state.stats_done = False
     st.session_state.viz_done = False
+    st.session_state.model_metrics = None
+    st.session_state.trained_model = None
+    st.session_state.model_features_list = None
+    st.session_state.model_target_col = None
+    st.session_state.model_scaler = None
+    st.session_state.model_task_type = None
+    st.session_state.model_encoded_categories = None
+    st.session_state.modeling_log = None
+    st.session_state.modeling_done = False
 
 
 def get_df(prefer_clean: bool = True) -> pd.DataFrame | None:

@@ -438,7 +438,7 @@ init_session()
 
 # ── Sidebar Navigation ────────────────────────────────────────────────────────
 with st.sidebar:
-    st.markdown("## 🤖 CSV Insight Agents")
+    st.markdown("## 🤖 CSV Agent Analyzer")
     st.markdown("### AI-Powered Analysis")
     st.markdown("---")
     
@@ -448,6 +448,7 @@ with st.sidebar:
         "🧹 Data Cleaning": "cleaning",
         "📊 Statistical Analysis": "stats",
         "📈 Visualization": "visualization",
+        "🤖 Modeling & Evaluation": "modeling",
         "💡 AI Insights": "insights",
         "📄 Report": "report",
     }
@@ -466,6 +467,50 @@ with st.sidebar:
     
     st.markdown("---")
     
+    # ── Agent Directory Panel ─────────────────────────────────────────────────
+    st.markdown("### 🤖 Agent Directory")
+    
+    quality_ready = st.session_state.get("quality_report") is not None
+    cleaning_ready = st.session_state.get("cleaning_report") is not None
+    stats_ready = st.session_state.get("stats_done", False)
+    viz_ready = st.session_state.get("viz_done", False)
+    modeling_ready = st.session_state.get("modeling_done", False)
+    insights_ready = st.session_state.get("insights_text") is not None
+    report_ready = st.session_state.get("report_text") is not None
+    
+    agent_statuses = [
+        ("System Orchestrator", "Ready", "⚡"),
+        ("Quality Agent", "Ready" if quality_ready else "Waiting", "🔍"),
+        ("Cleaning Agent", "Ready" if cleaning_ready else "Waiting", "🧹"),
+        ("Statistical Agent", "Ready" if stats_ready else "Waiting", "📊"),
+        ("Visuals Agent", "Ready" if viz_ready else "Waiting", "📈"),
+        ("Modeling Agent", "Ready" if modeling_ready else "Waiting", "🤖"),
+        ("Insights Agent", "Ready" if insights_ready else "Waiting", "💡"),
+        ("Report Agent", "Ready" if report_ready else "Waiting", "📄"),
+    ]
+    
+    for name, status, icon in agent_statuses:
+        status_color = "color:#34d399; background:rgba(52,211,153,0.12); border:1px solid rgba(52,211,153,0.2);" if status == "Ready" else "color:#64748b; background:rgba(148,163,184,0.06); border:1px solid rgba(148,163,184,0.15);"
+        st.markdown(f"""
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.45rem 0.6rem; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.04); border-radius: 6px; margin-bottom: 0.3rem;">
+            <span style="font-size: 0.9rem; margin-right: 0.5rem;">{icon}</span>
+            <span style="font-size: 0.78rem; font-weight: 500; color: #94a3b8; flex-grow: 1;">{name}</span>
+            <span style="font-size: 0.68rem; font-weight: 600; padding: 2px 6px; border-radius: 4px; {status_color}">{status}</span>
+        </div>
+        """, unsafe_allow_html=True)
+        
+    st.markdown("---")
+    
+    # ── API Key configurator ──────────────────────────────────────────────────
+    from utils.llm import get_api_key
+    if not get_api_key():
+        st.markdown("### 🔑 OpenRouter API Key")
+        api_key_input = st.text_input("Enter Key", type="password", help="Provide your OpenRouter API key to activate the AI Insights and Report Writing agents.")
+        if api_key_input:
+            st.session_state.openrouter_api_key = api_key_input
+            st.rerun()
+        st.markdown("---")
+
     if is_data_loaded():
         df = get_df()
         st.markdown(f'<span class="badge-ready">✓ Data Loaded</span>', unsafe_allow_html=True)
@@ -501,6 +546,9 @@ try:
         render()
     elif page == "visualization":
         from pages_content.visualization import render
+        render()
+    elif page == "modeling":
+        from pages_content.modeling import render
         render()
     elif page == "insights":
         from pages_content.insights import render

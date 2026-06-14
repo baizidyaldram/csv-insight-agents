@@ -43,6 +43,28 @@ def build_data_summary(df: pd.DataFrame) -> str:
         for a, b, val in pairs[:5]:
             lines.append(f"  {a} <-> {b}: {val}")
 
+    # Add modeling info if available
+    if st.session_state.get("modeling_done"):
+        lines.append("")
+        lines.append("=== Machine Learning Modeling Summary ===")
+        lines.append(f"Target Column: {st.session_state.model_target_col}")
+        lines.append(f"Features Used: {', '.join(st.session_state.model_features_list)}")
+        lines.append(f"Task Type: {st.session_state.model_task_type}")
+        lines.append(f"Best Trained Model: {st.session_state.trained_model_name}")
+        lines.append("Model Performance Metrics on Test Set:")
+        metrics = st.session_state.model_metrics[st.session_state.trained_model_name]
+        for k, v in metrics.items():
+            if isinstance(v, (int, float)):
+                lines.append(f"  {k}: {v:.4f}")
+        
+        # Feature importances
+        if "feature_importances" in metrics:
+            lines.append("Top Feature Importances (Predictive Power):")
+            feat_imp = metrics["feature_importances"]
+            sorted_imp = sorted(feat_imp.items(), key=lambda x: x[1], reverse=True)
+            for feat, val in sorted_imp[:5]:
+                lines.append(f"  {feat}: {val:.4f}")
+
     return "\n".join(lines)
 
 
