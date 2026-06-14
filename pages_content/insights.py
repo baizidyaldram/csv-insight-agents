@@ -72,7 +72,6 @@ def build_data_summary(df: pd.DataFrame) -> str:
 
 def format_ai_response(text: str) -> str:
     """Format AI response with better HTML styling."""
-    # Implementation from original file (kept as is)
     code_blocks = []
     def save_code_block(match):
         code_blocks.append(match.group(0))
@@ -200,7 +199,7 @@ Keep the total response under 600 words. Be specific and data-driven."""
             st.session_state.insights_text = response
             st.session_state.insights_type = insight_type
 
-    # Display insights (same as original, kept for brevity)
+    # Display insights
     if st.session_state.get("insights_text"):
         st.markdown("---")
         
@@ -234,6 +233,41 @@ Keep the total response under 600 words. Be specific and data-driven."""
             if st.button("➡️ Report", use_container_width=True):
                 st.session_state.current_page = "report"
                 st.rerun()
+        
+        # Follow-up question section - FIXED: Added proper label
+        st.markdown("---")
+        st.markdown("### ❓ Ask a Follow-up Question")
+        
+        col_q1, col_q2 = st.columns([4, 1])
+        with col_q1:
+            custom_q = st.text_input(
+                "Your question",  # Added proper label
+                placeholder="Example: What are the top 3 actionable recommendations from this data?",
+                label_visibility="collapsed",
+                key="custom_question"
+            )
+        with col_q2:
+            if st.button("Ask", key="custom_ask", use_container_width=True):
+                if custom_q.strip():
+                    data_summary = build_data_summary(df)
+                    prompt = f"""Dataset summary:
+{data_summary}
+
+Question: {custom_q}
+
+Answer the question in a clear, well-structured format. Use markdown for better readability. Keep the answer concise but informative (max 300 words)"""
+
+                    with st.spinner("💭 Generating answer..."):
+                        answer = call_llm(prompt, max_tokens=800)
+                        
+                        st.markdown(f"""
+                        <div style="background: var(--bg-card); border-left: 4px solid #3B82F6; border-radius: 12px; padding: 1rem; margin-top: 0.75rem;">
+                            <div style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 0.5rem;">💬 Answer:</div>
+                            <div style="color: var(--text-primary); line-height: 1.6;">{answer}</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                else:
+                    st.warning("⚠️ Please enter a question.")
         
         col_nav1, col_nav2 = st.columns(2)
         with col_nav1:
