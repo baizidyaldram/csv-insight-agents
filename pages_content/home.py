@@ -27,8 +27,9 @@ def render():
         ("📊", "Statistical Analysis", "Descriptive stats, correlations & distributions"),
     ]
     
-    agents_right = [
+   agents_right = [
         ("📈", "Visualization Agent", "Interactive charts powered by Plotly"),
+        ("🤖", "Modeling & Evaluation Agent", "ML algorithms, predictions & SHAP analysis"),  # ADD THIS
         ("💡", "AI Insights Agent", "LLM-powered business insights (OpenRouter)"),
         ("📄", "Report Agent", "Generate comprehensive analysis reports"),
     ]
