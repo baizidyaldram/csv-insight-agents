@@ -1,4 +1,3 @@
-# Core dependencies
 streamlit
 pandas
 numpy
@@ -6,22 +5,14 @@ plotly
 scikit-learn
 scipy
 openpyxl
-
-# Advanced Modeling Libraries
 xgboost
 lightgbm
 optuna
 imbalanced-learn
 shap
 umap-learn
-
-# Statistical Analysis
 statsmodels
-
-# Feature Engineering
 category-encoders
-
-# Performance & Utilities
 joblib
 tqdm
 psutil
