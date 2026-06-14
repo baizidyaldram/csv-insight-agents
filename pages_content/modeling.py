@@ -620,10 +620,12 @@ def display_results(task_type):
             st.error(f"Prediction error: {e}")
 
     st.markdown("<br><hr>", unsafe_allow_html=True)
-    st.markdown("""
-    <div style="background:#1a1936; border: 1px solid #2a2a4e; border-radius: 10px; padding: 1rem;">
-        <p style="color:#94a3b8; margin:0; font-size:0.88rem;">
-            ➡️ Next step: head to <strong style="color:#a78bfa;">💡 AI Insights</strong> for LLM-powered business and model interpretation.
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
+    col_nav1, col_nav2 = st.columns(2)
+    with col_nav1:
+        if st.button("← Back to Visualization", use_container_width=True):
+            st.session_state.current_page = "visualization"
+            st.rerun()
+    with col_nav2:
+        if st.button("➡️ Proceed to AI Insights", use_container_width=True):
+            st.session_state.current_page = "insights"
+            st.rerun()

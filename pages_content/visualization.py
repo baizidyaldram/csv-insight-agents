@@ -93,8 +93,8 @@ def render():
                 st.session_state.current_page = "home"
                 st.rerun()
         with col2:
-            if st.button("➡️ Next: AI Insights", use_container_width=True):
-                st.session_state.current_page = "insights"
+            if st.button("➡️ Next: Modeling & Evaluation", use_container_width=True):
+                st.session_state.current_page = "modeling"
                 st.rerun()
     else:
         col1, col2 = st.columns(2)

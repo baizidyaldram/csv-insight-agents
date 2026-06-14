@@ -398,8 +398,8 @@ Answer the question in a clear, well-structured format. Use markdown for better 
         # Navigation buttons
         col_nav1, col_nav2 = st.columns(2)
         with col_nav1:
-            if st.button("← Back to Visualization", use_container_width=True):
-                st.session_state.current_page = "visualization"
+            if st.button("← Back to Modeling", use_container_width=True):
+                st.session_state.current_page = "modeling"
                 st.rerun()
         with col_nav2:
             if st.button("➡️ Proceed to Report", use_container_width=True):
