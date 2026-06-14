@@ -15,7 +15,7 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ── Premium Dark Theme CSS ──────────────────────────────────────────────────
+# ── Modern UI Theme CSS (Cleaner, More Professional) ──────────────────────────────────
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
@@ -28,13 +28,13 @@ st.markdown("""
     box-sizing: border-box;
 }
 
-/* Premium Dark Gradient Background */
+/* Modern Gradient Background */
 .stApp {
-    background: radial-gradient(ellipse at 20% 30%, #1a1a2e, #0a0a15);
+    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
     background-attachment: fixed;
 }
 
-/* Animated particles effect */
+/* Subtle animated overlay */
 .stApp::before {
     content: '';
     position: fixed;
@@ -42,25 +42,24 @@ st.markdown("""
     left: 0;
     right: 0;
     bottom: 0;
-    background-image: 
-        radial-gradient(circle at 10% 20%, rgba(100, 108, 255, 0.08) 0%, transparent 50%),
-        radial-gradient(circle at 90% 60%, rgba(167, 139, 250, 0.08) 0%, transparent 50%),
-        radial-gradient(circle at 50% 80%, rgba(240, 147, 251, 0.05) 0%, transparent 60%);
+    background: 
+        radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(255, 119, 198, 0.08) 0%, transparent 50%);
     pointer-events: none;
     z-index: 0;
 }
 
-/* Main content container */
+/* Main content container - Glass morphism */
 .main .block-container {
     padding: 2rem 2rem !important;
     max-width: 1200px !important;
     margin: 0 auto !important;
-    background: rgba(18, 18, 35, 0.7);
-    backdrop-filter: blur(20px);
-    border-radius: 32px;
+    background: rgba(20, 20, 40, 0.6);
+    backdrop-filter: blur(12px);
+    border-radius: 24px;
     margin-top: 1.5rem !important;
     margin-bottom: 1.5rem !important;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
 
@@ -69,18 +68,13 @@ st.markdown("""
 
 /* ============ SIDEBAR STYLING ============ */
 [data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #0f0f1a 0%, #0a0a12 100%);
-    border-right: 1px solid rgba(255, 255, 255, 0.06);
+    background: linear-gradient(180deg, rgba(15, 15, 30, 0.95), rgba(10, 10, 20, 0.98));
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
 }
 
 [data-testid="stSidebar"] * {
     color: #e2e2f0 !important;
-}
-
-[data-testid="stSidebar"] .stMarkdown h1,
-[data-testid="stSidebar"] .stMarkdown h2,
-[data-testid="stSidebar"] .stMarkdown h3 {
-    color: #ffffff !important;
 }
 
 /* Sidebar buttons */
@@ -95,22 +89,22 @@ st.markdown("""
 }
 
 [data-testid="stSidebar"] .stButton button:hover {
-    background: rgba(100, 108, 255, 0.15);
-    border-color: rgba(100, 108, 255, 0.4);
+    background: rgba(99, 102, 241, 0.15);
+    border-color: rgba(99, 102, 241, 0.4);
     transform: translateX(4px);
 }
 
 [data-testid="stSidebar"] .stButton button[data-testid="baseButton-primary"] {
-    background: linear-gradient(135deg, #6468ff, #a78bfa);
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
     border: none;
-    box-shadow: 0 4px 12px rgba(100, 108, 255, 0.3);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
 /* ============ CARD STYLES ============ */
 .agent-card {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 16px;
     padding: 1rem 1.25rem;
     margin-bottom: 0.75rem;
@@ -119,8 +113,8 @@ st.markdown("""
 
 .agent-card:hover {
     transform: translateY(-3px);
-    border-color: rgba(100, 108, 255, 0.4);
-    background: linear-gradient(135deg, rgba(100, 108, 255, 0.08), rgba(167, 139, 250, 0.04));
+    border-color: rgba(99, 102, 241, 0.5);
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.05));
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 }
 
@@ -128,7 +122,7 @@ st.markdown("""
     font-size: 0.95rem;
     font-weight: 700;
     margin-bottom: 0.25rem;
-    background: linear-gradient(135deg, #ffffff, #c4b5fd);
+    background: linear-gradient(135deg, #ffffff, #a78bfa);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -142,9 +136,9 @@ st.markdown("""
 
 /* ============ METRIC CARDS ============ */
 .metric-card {
-    background: linear-gradient(135deg, rgba(100, 108, 255, 0.1), rgba(167, 139, 250, 0.05));
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.05));
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(100, 108, 255, 0.2);
+    border: 1px solid rgba(99, 102, 241, 0.2);
     border-radius: 20px;
     padding: 1.2rem;
     text-align: center;
@@ -153,14 +147,14 @@ st.markdown("""
 
 .metric-card:hover {
     transform: translateY(-4px);
-    border-color: rgba(100, 108, 255, 0.5);
-    background: linear-gradient(135deg, rgba(100, 108, 255, 0.15), rgba(167, 139, 250, 0.08));
+    border-color: rgba(99, 102, 241, 0.5);
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.08));
 }
 
 .metric-value {
     font-size: 2.2rem;
     font-weight: 800;
-    background: linear-gradient(135deg, #ffffff, #c4b5fd);
+    background: linear-gradient(135deg, #ffffff, #a78bfa);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -177,20 +171,20 @@ st.markdown("""
 
 /* ============ BUTTON STYLES ============ */
 .stButton > button {
-    background: linear-gradient(135deg, #6468ff, #a78bfa);
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
     color: white;
     border: none;
-    border-radius: 14px;
+    border-radius: 12px;
     font-weight: 600;
     padding: 0.6rem 1.5rem;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(100, 108, 255, 0.3);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
 .stButton > button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(100, 108, 255, 0.4);
-    background: linear-gradient(135deg, #7c80ff, #b89bff);
+    box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+    background: linear-gradient(135deg, #818cf8, #a78bfa);
 }
 
 /* Secondary button */
@@ -200,16 +194,11 @@ st.markdown("""
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.stButton > button[data-testid="baseButton-secondary"]:hover {
-    background: rgba(100, 108, 255, 0.15);
-    border-color: rgba(100, 108, 255, 0.4);
-}
-
 /* ============ TYPOGRAPHY ============ */
 h1 {
     font-size: 2.8rem !important;
     font-weight: 800 !important;
-    background: linear-gradient(135deg, #ffffff, #c4b5fd);
+    background: linear-gradient(135deg, #ffffff, #a78bfa);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -255,15 +244,15 @@ p, .stMarkdown {
 /* ============ FILE UPLOADER ============ */
 [data-testid="stFileUploader"] {
     background: rgba(255, 255, 255, 0.02);
-    border: 2px dashed rgba(100, 108, 255, 0.3);
+    border: 2px dashed rgba(99, 102, 241, 0.3);
     border-radius: 20px;
     padding: 2rem;
     transition: all 0.3s ease;
 }
 
 [data-testid="stFileUploader"]:hover {
-    border-color: rgba(100, 108, 255, 0.6);
-    background: rgba(100, 108, 255, 0.05);
+    border-color: rgba(99, 102, 241, 0.6);
+    background: rgba(99, 102, 241, 0.05);
 }
 
 /* ============ EXPANDER ============ */
@@ -293,13 +282,13 @@ p, .stMarkdown {
 }
 
 .stTabs [aria-selected="true"] {
-    background: linear-gradient(135deg, #6468ff, #a78bfa);
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
     color: white;
 }
 
 /* ============ PROGRESS BAR ============ */
 .stProgress > div > div {
-    background: linear-gradient(90deg, #6468ff, #a78bfa);
+    background: linear-gradient(90deg, #6366f1, #8b5cf6);
 }
 
 /* ============ ALERTS ============ */
@@ -307,10 +296,6 @@ p, .stMarkdown {
     background: rgba(255, 255, 255, 0.05) !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
     border-radius: 12px !important;
-    color: #e2e2f0 !important;
-}
-
-.stAlert [data-testid="stMarkdown"] {
     color: #e2e2f0 !important;
 }
 
@@ -355,32 +340,18 @@ hr {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #6468ff, #a78bfa);
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
     border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, #7c80ff, #b89bff);
-}
-
-/* ============ CODE BLOCKS ============ */
-code, pre {
-    background: rgba(0, 0, 0, 0.4);
-    border-radius: 8px;
-    padding: 0.2rem 0.4rem;
-    font-family: 'Monaco', 'Menlo', monospace;
-    font-size: 0.85rem;
-    color: #c4b5fd;
+    background: linear-gradient(135deg, #818cf8, #a78bfa);
 }
 
 /* ============ SELECT BOX ============ */
 [data-baseweb="select"] {
     background: rgba(255, 255, 255, 0.03);
     border-radius: 12px;
-}
-
-[data-baseweb="select"] * {
-    color: #e2e2f0;
 }
 
 /* ============ TEXT INPUT ============ */
@@ -391,28 +362,9 @@ code, pre {
     color: #e2e2f0;
 }
 
-[data-testid="stTextInput"] input:focus {
-    border-color: #6468ff;
-    box-shadow: 0 0 0 2px rgba(100, 108, 255, 0.2);
-}
-
-/* ============ TEXT AREA ============ */
-[data-testid="stTextArea"] textarea {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    color: #e2e2f0;
-}
-
-/* ============ MULTISELECT ============ */
-[data-baseweb="tag"] {
-    background: rgba(100, 108, 255, 0.2);
-    border-radius: 8px;
-}
-
 /* ============ SLIDER ============ */
 [data-testid="stSlider"] {
-    color: #6468ff;
+    color: #6366f1;
 }
 
 /* Responsive Design */
@@ -432,7 +384,6 @@ code, pre {
 }
 </style>
 """, unsafe_allow_html=True)
-
 # ── Session init ──────────────────────────────────────────────────────────────
 init_session()
 
