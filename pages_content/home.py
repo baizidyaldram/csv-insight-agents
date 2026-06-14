@@ -104,7 +104,7 @@ def render():
                 st.error(f"Error: {e}")
     
     with col2:
-        if st.button("📦 Load Sample Dataset", use_container_width=True):
+        if st.button("📦 Load Sample Dataset", key="load_sample_btn", use_container_width=True):
             try:
                 np.random.seed(42)
                 sample_df = pd.DataFrame({
@@ -143,7 +143,7 @@ def render():
             <div style="font-size: 0.7rem; color: var(--text-secondary);">Quality scoring & validation</div>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("Go to Quality →", key="nav_quality", use_container_width=True):
+        if st.button("Go to Quality →", key="goto_quality_btn", use_container_width=True):
             navigate_to("quality")
     
     with col2:
@@ -154,7 +154,7 @@ def render():
             <div style="font-size: 0.7rem; color: var(--text-secondary);">Missing values & duplicates</div>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("Go to Cleaning →", key="nav_cleaning", use_container_width=True):
+        if st.button("Go to Cleaning →", key="goto_cleaning_btn", use_container_width=True):
             navigate_to("cleaning")
     
     with col3:
@@ -165,7 +165,7 @@ def render():
             <div style="font-size: 0.7rem; color: var(--text-secondary);">Descriptive & correlations</div>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("Go to Statistics →", key="nav_stats", use_container_width=True):
+        if st.button("Go to Statistics →", key="goto_stats_btn", use_container_width=True):
             navigate_to("stats")
     
     with col4:
@@ -176,7 +176,7 @@ def render():
             <div style="font-size: 0.7rem; color: var(--text-secondary);">Interactive charts</div>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("Go to Visualization →", key="nav_viz", use_container_width=True):
+        if st.button("Go to Visualization →", key="goto_viz_btn", use_container_width=True):
             navigate_to("visualization")
 
     # Second row
@@ -190,7 +190,7 @@ def render():
             <div style="font-size: 0.7rem; color: var(--text-secondary);">ML algorithms & predictions</div>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("Go to Modeling →", key="nav_modeling", use_container_width=True):
+        if st.button("Go to Modeling →", key="goto_modeling_btn", use_container_width=True):
             navigate_to("modeling")
     
     with col2:
@@ -201,7 +201,7 @@ def render():
             <div style="font-size: 0.7rem; color: var(--text-secondary);">LLM-powered analysis</div>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("Go to Insights →", key="nav_insights", use_container_width=True):
+        if st.button("Go to Insights →", key="goto_insights_btn", use_container_width=True):
             navigate_to("insights")
     
     with col3:
@@ -212,7 +212,7 @@ def render():
             <div style="font-size: 0.7rem; color: var(--text-secondary);">Comprehensive export</div>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("Go to Report →", key="nav_report", use_container_width=True):
+        if st.button("Go to Report →", key="goto_report_btn", use_container_width=True):
             navigate_to("report")
     
     with col4:
@@ -307,4 +307,3 @@ def render():
         Powered by Streamlit • XGBoost • LightGBM • SHAP • OpenRouter AI
     </div>
     """, unsafe_allow_html=True)
-
