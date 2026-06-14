@@ -56,7 +56,10 @@ def render():
             if len(numeric_cols) >= 2:
                 st.markdown("### Correlation Matrix")
                 corr = df[numeric_cols].corr()
-                st.dataframe(corr.style.background_gradient(cmap="RdYlGn", vmin=-1, vmax=1).format("{:.3f}"), use_container_width=True)
+                try:
+                    st.dataframe(corr.style.background_gradient(cmap="RdYlGn", vmin=-1, vmax=1).format("{:.3f}"), use_container_width=True)
+                except:
+                   st.dataframe(corr.round(3), use_container_width=True)
                 
                 # Top correlations
                 st.markdown("### Top Correlated Pairs")
