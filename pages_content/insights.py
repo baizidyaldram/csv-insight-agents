@@ -1,9 +1,9 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import re
 from utils.session import get_df, is_data_loaded
 from utils.llm import call_llm, get_active_model
-import re
 
 
 def build_data_summary(df: pd.DataFrame) -> str:
@@ -43,35 +43,77 @@ def build_data_summary(df: pd.DataFrame) -> str:
         for a, b, val in pairs[:5]:
             lines.append(f"  {a} <-> {b}: {val}")
 
-    # Add modeling info if available
+    # Add data quality info if available
+    quality_report = st.session_state.get("quality_report")
+    if quality_report and isinstance(quality_report, dict):
+        lines.append("")
+        lines.append("=== Data Quality Assessment ===")
+        lines.append(f"Overall Quality Score: {quality_report.get('score', 'N/A')}/100")
+        lines.append(f"Completeness: {quality_report.get('completeness', 'N/A')}%")
+        lines.append(f"Duplicate Rate: {quality_report.get('duplicate_rate', 'N/A')}%")
+        lines.append(f"Missing Cells: {quality_report.get('missing_cells', 'N/A')}")
+
+    # Add cleaning info if available
+    cleaning_report = st.session_state.get("cleaning_report")
+    if cleaning_report and isinstance(cleaning_report, dict):
+        lines.append("")
+        lines.append("=== Data Cleaning Summary ===")
+        before_shape = cleaning_report.get('before_shape', [0, 0])
+        after_shape = cleaning_report.get('after_shape', [0, 0])
+        lines.append(f"Rows before cleaning: {before_shape[0]}")
+        lines.append(f"Rows after cleaning: {after_shape[0]}")
+        lines.append(f"Rows removed: {before_shape[0] - after_shape[0]}")
+        if cleaning_report.get('log'):
+            lines.append(f"Cleaning operations: {len(cleaning_report['log'])} steps performed")
+
+    # Add modeling info if available - FIXED to handle both list and dict
     if st.session_state.get("modeling_done"):
         lines.append("")
         lines.append("=== Machine Learning Modeling Summary ===")
         lines.append(f"Target Column: {st.session_state.model_target_col}")
-        lines.append(f"Features Used: {', '.join(st.session_state.model_features_list)}")
+        lines.append(f"Features Used: {', '.join(st.session_state.model_features_list[:10])}")
+        if len(st.session_state.model_features_list) > 10:
+            lines.append(f"  ... and {len(st.session_state.model_features_list) - 10} more features")
         lines.append(f"Task Type: {st.session_state.model_task_type}")
         lines.append(f"Best Trained Model: {st.session_state.trained_model_name}")
         lines.append("Model Performance Metrics on Test Set:")
-        metrics = st.session_state.model_metrics[st.session_state.trained_model_name]
+        
+        metrics = st.session_state.model_metrics.get(st.session_state.trained_model_name, {})
         for k, v in metrics.items():
-            if isinstance(v, (int, float)):
+            if isinstance(v, (int, float)) and k not in ["cv_std"]:
                 lines.append(f"  {k}: {v:.4f}")
         
-        # Feature importances
+        # FIXED: Handle feature importances correctly
         if "feature_importances" in metrics:
             lines.append("Top Feature Importances (Predictive Power):")
             feat_imp = metrics["feature_importances"]
-            sorted_imp = sorted(feat_imp.items(), key=lambda x: x[1], reverse=True)
-            for feat, val in sorted_imp[:5]:
-                lines.append(f"  {feat}: {val:.4f}")
+            features_list = st.session_state.model_features_list
+            
+            # Convert to dictionary if it's a list
+            if isinstance(feat_imp, list):
+                # Handle case where lengths don't match
+                min_len = min(len(features_list), len(feat_imp))
+                importances_dict = dict(zip(features_list[:min_len], feat_imp[:min_len]))
+            elif isinstance(feat_imp, dict):
+                importances_dict = feat_imp
+            else:
+                importances_dict = {}
+            
+            # Sort and display top 5
+            if importances_dict:
+                sorted_imp = sorted(importances_dict.items(), key=lambda x: x[1], reverse=True)
+                for feat, val in sorted_imp[:5]:
+                    lines.append(f"  {feat}: {val:.4f}")
 
     return "\n".join(lines)
 
 
 def format_ai_response(text: str) -> str:
     """Format AI response with better HTML styling."""
+    if not text:
+        return "<p>No insights generated yet. Click 'Generate Insights' to begin.</p>"
     
-    # First, preserve code blocks if any
+    # Preserve code blocks if any
     code_blocks = []
     def save_code_block(match):
         code_blocks.append(match.group(0))
@@ -118,7 +160,7 @@ def format_ai_response(text: str) -> str:
                 for cell in cells:
                     cell_clean = re.sub(r'\*\*(.*?)\*\*', r'\1', cell)
                     table_html += f'<th style="border: 1px solid rgba(255,255,255,0.2); padding: 0.75rem; text-align: left; font-weight: 700; color: #f093fb;">{cell_clean}</th>'
-                table_html += '</tr>'
+                table_html += '</table>'
                 table_html += '</thead><tbody>'
             else:
                 table_html += '<tr>'
@@ -167,9 +209,120 @@ def format_ai_response(text: str) -> str:
     return text
 
 
+def get_modeling_insights_context() -> str:
+    """Generate additional context about modeling results for better insights."""
+    if not st.session_state.get("modeling_done"):
+        return ""
+    
+    context = []
+    context.append("\n=== MODELING RESULTS DETAILS ===\n")
+    
+    metrics = st.session_state.model_metrics
+    best_model = st.session_state.trained_model_name
+    task_type = st.session_state.model_task_type
+    target_col = st.session_state.model_target_col
+    
+    context.append(f"Best performing model: {best_model}")
+    context.append(f"Task: {task_type} - predicting '{target_col}'")
+    
+    # Add best model metrics
+    best_metrics = metrics.get(best_model, {})
+    if task_type == "classification":
+        accuracy = best_metrics.get("Accuracy", 0)
+        f1 = best_metrics.get("F1-Score", 0)
+        context.append(f"Best model accuracy: {accuracy:.4f} ({accuracy*100:.1f}%)")
+        context.append(f"Best model F1-Score: {f1:.4f}")
+        
+        # Performance interpretation
+        if accuracy >= 0.9:
+            context.append("Performance: EXCELLENT - Model is highly accurate")
+        elif accuracy >= 0.8:
+            context.append("Performance: GOOD - Model performs well")
+        elif accuracy >= 0.7:
+            context.append("Performance: MODERATE - Model has reasonable accuracy")
+        else:
+            context.append("Performance: NEEDS IMPROVEMENT - Consider feature engineering or more data")
+    else:
+        r2 = best_metrics.get("R2 Score", 0)
+        rmse = best_metrics.get("RMSE", 0)
+        context.append(f"Best model R² score: {r2:.4f}")
+        context.append(f"Best model RMSE: {rmse:.4f}")
+        
+        if r2 >= 0.9:
+            context.append("Performance: EXCELLENT - Model explains 90%+ variance")
+        elif r2 >= 0.7:
+            context.append("Performance: GOOD - Model explains 70%+ variance")
+        elif r2 >= 0.5:
+            context.append("Performance: MODERATE - Model explains 50%+ variance")
+        else:
+            context.append("Performance: NEEDS IMPROVEMENT - Low explanatory power")
+    
+    # Feature importance if available
+    if "feature_importances" in best_metrics:
+        feat_imp = best_metrics["feature_importances"]
+        features_list = st.session_state.model_features_list
+        
+        if isinstance(feat_imp, list):
+            min_len = min(len(features_list), len(feat_imp))
+            importances_dict = dict(zip(features_list[:min_len], feat_imp[:min_len]))
+        else:
+            importances_dict = feat_imp
+        
+        if importances_dict:
+            top_features = sorted(importances_dict.items(), key=lambda x: x[1], reverse=True)[:3]
+            context.append(f"Top 3 influential features: {', '.join([f[0] for f in top_features])}")
+    
+    return "\n".join(context)
+
+
+def get_data_quality_insights_context() -> str:
+    """Generate context about data quality for better insights."""
+    context = []
+    
+    quality_report = st.session_state.get("quality_report")
+    cleaning_report = st.session_state.get("cleaning_report")
+    
+    if quality_report:
+        context.append("\n=== DATA QUALITY CONTEXT ===\n")
+        score = quality_report.get('score', 0)
+        completeness = quality_report.get('completeness', 100)
+        
+        if score >= 85:
+            context.append("Data Quality: EXCELLENT - High quality dataset ready for analysis")
+        elif score >= 70:
+            context.append("Data Quality: GOOD - Minor issues that were addressed")
+        elif score >= 50:
+            context.append("Data Quality: FAIR - Some data quality concerns to note")
+        else:
+            context.append("Data Quality: POOR - Significant data quality issues")
+        
+        context.append(f"Completeness: {completeness}% complete")
+        
+        if quality_report.get('duplicate_rate', 0) > 5:
+            context.append("Note: High duplicate rate detected - may affect analysis")
+        
+        if quality_report.get('missing_cells', 0) > 100:
+            context.append("Note: Significant missing values were present and handled")
+    
+    if cleaning_report:
+        before_rows = cleaning_report.get('before_shape', [0, 0])[0]
+        after_rows = cleaning_report.get('after_shape', [0, 0])[0]
+        rows_removed = before_rows - after_rows
+        
+        if rows_removed > 0:
+            context.append(f"Cleaning removed {rows_removed} rows ({rows_removed/before_rows*100:.1f}% of data)")
+        
+        if cleaning_report.get('log'):
+            context.append(f"Applied {len(cleaning_report['log'])} cleaning operations")
+    
+    return "\n".join(context)
+
+
 def render():
+    """Main render function for AI Insights page."""
+    
     st.markdown("## 💡 AI Insights Agent")
-    st.markdown("Uses an LLM via OpenRouter to generate business-level insights from your data.")
+    st.markdown("Generates intelligent, business-level insights by analyzing your data quality, statistics, and machine learning models.")
     st.markdown("---")
 
     if not is_data_loaded():
@@ -197,15 +350,34 @@ def render():
     </div>
     """, unsafe_allow_html=True)
 
+    # Show what data is available for insights
+    st.markdown("### 📊 Available Data for Analysis")
+    
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        has_quality = st.session_state.get("quality_report") is not None
+        st.markdown(f"{'✅' if has_quality else '⏳'} Quality Report: {'Available' if has_quality else 'Not yet'}")
+    with col2:
+        has_cleaning = st.session_state.get("cleaning_report") is not None
+        st.markdown(f"{'✅' if has_cleaning else '⏳'} Cleaning Report: {'Available' if has_cleaning else 'Not yet'}")
+    with col3:
+        has_modeling = st.session_state.get("modeling_done", False)
+        st.markdown(f"{'✅' if has_modeling else '⏳'} Modeling Results: {'Available' if has_modeling else 'Not yet'}")
+    
+    st.markdown("---")
+
     # Insight type selector
     insight_options = {
         "General business insights": "📊",
         "Anomalies and red flags": "⚠️",
-        "Growth opportunities": "🚀",
-        "Customer behavior patterns": "👥",
         "Operational efficiency observations": "⚙️",
-        "Executive summary (non-technical)": "📋"
+        "Executive summary (non-technical)": "📋",
+        "Model performance analysis": "🤖",
+        "Data quality recommendations": "🔍"
     }
+    # Adjust options based on available data
+    if not has_modeling:
+        insight_options.pop("Model performance analysis", None)
     
     insight_type = st.selectbox(
         "Select insight type",
@@ -215,7 +387,7 @@ def render():
 
     extra_context = st.text_area(
         "Additional context (optional)",
-        placeholder="Example: This is monthly sales data from an e-commerce company targeting Southeast Asia...",
+        placeholder="Example: This is monthly sales data from an e-commerce company targeting Southeast Asia. We're interested in predicting customer churn...",
         height=80,
     )
 
@@ -224,52 +396,66 @@ def render():
         run_btn = st.button("🚀 Generate Insights", use_container_width=True, type="primary")
 
     if run_btn:
+        # Build comprehensive context
         data_summary = build_data_summary(df)
+        quality_context = get_data_quality_insights_context()
+        modeling_context = get_modeling_insights_context()
+        
+        # Combine all context
+        full_context = data_summary + quality_context + modeling_context
+        
+        # Customize system prompt based on insight type
+        system_prompt = f"""You are a senior data analyst and business intelligence expert specializing in extracting actionable insights from data.
 
-        system_prompt = """You are a senior data analyst and business intelligence expert. 
-You analyze datasets and provide clear, actionable, business-focused insights.
-Write in a professional but accessible tone. Use bullet points and short paragraphs.
-Always be specific and reference actual column names and values from the data.
-Format your response with clear sections using markdown (## for sections, ### for subsections, - for bullet points).
-Use **bold** for key metrics and important numbers.
-Avoid generic statements. Every insight must be grounded in the data provided.
+Current focus: {insight_type}
 
-For tables, use standard markdown format:
-| Column 1 | Column 2 | Column 3 |
-|----------|----------|----------|
-| value 1 | value 2 | value 3 |
+Guidelines:
+1. Be specific - reference actual column names, values, and metrics from the data
+2. Be quantitative - use actual numbers from the analysis
+3. Be actionable - provide clear recommendations
+4. Be professional - use clear business language
+5. Use markdown formatting with ## for sections, ### for subsections
+6. Use **bold** for key metrics and important numbers
 
-Do not add emoji icons inside table cells."""
+Available analysis includes:
+- Dataset statistics and correlations
+- Data quality assessment and cleaning results  
+- {'Machine learning model performance and feature importance' if has_modeling else ''}
+
+Write insights that are directly grounded in the provided data. Avoid generic statements."""
 
         user_prompt = f"""Analyze the following dataset and provide {insight_type.lower()}.
 
 {extra_context if extra_context.strip() else ''}
 
-=== DATASET SUMMARY ===
-{data_summary}
+=== DATASET AND ANALYSIS SUMMARY ===
+{full_context}
 
-Please provide a well-structured response with:
+Please provide a comprehensive response structured as:
 
 ## Key Findings
-- 3-5 bullet points with specific numbers and **bold** for important metrics
+- 3-5 specific findings with actual numbers and **bold** for important metrics
 
 ## Patterns & Trends
 - What stands out in the data
-- Use a table if comparing multiple categories (without emojis in cells)
+- Relationships between variables
+- {'Model performance patterns and what they reveal' if has_modeling else ''}
 
 ## Actionable Recommendations
-- 2-3 concrete next steps with clear justifications
+- 2-4 concrete recommendations based on the data
+- Prioritized by potential impact
 
-## Data Quality Notes
-- Any concerns worth flagging
+## {'Model Improvement Suggestions' if has_modeling else 'Data Quality Notes'}
+- {'Specific ways to improve model performance' if has_modeling else 'Any data quality concerns worth addressing'}
 
-Keep the total response under 600 words. Be specific and data-driven.
-Use markdown formatting for better readability but avoid emojis inside table cells."""
+Keep the total response under 700 words. Be specific, data-driven, and actionable.
+Use markdown formatting. Do not use emojis inside table cells if you create tables."""
 
         with st.spinner(f"🧠 Analyzing with {model_name}..."):
-            response = call_llm(user_prompt, system_prompt, max_tokens=1500)
+            response = call_llm(user_prompt, system_prompt, max_tokens=1800)
             st.session_state.insights_text = response
             st.session_state.insights_type = insight_type
+            st.rerun()
 
     # Display insights
     if st.session_state.get("insights_text"):
@@ -298,11 +484,12 @@ Use markdown formatting for better readability but avoid emojis inside table cel
         """, unsafe_allow_html=True)
         
         # Action buttons
+        st.markdown("---")
         col1, col2, col3, col4 = st.columns(4)
         
         with col1:
             st.download_button(
-                "📥 Download",
+                "📥 Download Insights",
                 data=st.session_state.insights_text,
                 file_name=f"insights_{st.session_state.get('insights_type', '').replace(' ', '_')}.txt",
                 mime="text/plain",
@@ -315,66 +502,102 @@ Use markdown formatting for better readability but avoid emojis inside table cel
                 st.rerun()
         
         with col3:
-            if st.button("📋 Copy", use_container_width=True):
+            if st.button("📋 Copy to Clipboard", use_container_width=True):
                 st.info("Select and copy the text above (Ctrl+C / Cmd+C)")
         
         with col4:
-            if st.button("➡️ Report", use_container_width=True):
+            if st.button("➡️ Go to Report", use_container_width=True):
                 st.session_state.current_page = "report"
                 st.rerun()
 
-        # IMPROVED Follow-up Question Section
+        # Follow-up Question Section
         st.markdown("---")
         st.markdown("### ❓ Ask a Follow-up Question")
+        st.markdown("Get deeper insights about specific aspects of your data or models.")
         
+        # Pre-defined follow-up questions based on available data
+        quick_questions = []
+        
+        if st.session_state.get("modeling_done"):
+            quick_questions.extend([
+                "What features most influence predictions?",
+                "How can we improve model accuracy?",
+                "Is the model ready for production?"
+            ])
+        
+        if st.session_state.get("quality_report"):
+            quick_questions.extend([
+                "What data quality issues should we fix?",
+                "How reliable are these insights?"
+            ])
+        
+        if quick_questions:
+            st.markdown("**Quick questions:**")
+            cols = st.columns(len(quick_questions))
+            for idx, q in enumerate(quick_questions):
+                with cols[idx]:
+                    if st.button(q, key=f"quick_q_{idx}", use_container_width=True):
+                        st.session_state.followup_question = q
+                        st.rerun()
+        
+        # Custom question input
         col_q1, col_q2 = st.columns([4, 1])
         with col_q1:
+            default_q = st.session_state.get("followup_question", "")
             custom_q = st.text_input(
                 "",
-                placeholder="Example: What are the top 3 actionable recommendations from this data?",
+                value=default_q,
+                placeholder="Example: What are the top 3 risks based on this data?",
                 label_visibility="collapsed",
                 key="custom_question"
             )
         with col_q2:
             if st.button("Ask", key="custom_ask", use_container_width=True):
                 if custom_q.strip():
+                    # Clear the stored question after using
+                    if "followup_question" in st.session_state:
+                        del st.session_state.followup_question
+                    
+                    # Build context for follow-up
                     data_summary = build_data_summary(df)
-                    prompt = f"""Dataset summary:
-{data_summary}
+                    quality_context = get_data_quality_insights_context()
+                    modeling_context = get_modeling_insights_context()
+                    
+                    full_context = data_summary + quality_context + modeling_context
+                    
+                    prompt = f"""Dataset analysis summary:
+{full_context}
 
-Question: {custom_q}
+Follow-up Question: {custom_q}
 
-Answer the question in a clear, well-structured format. Use markdown for better readability:
-- Use **bold** for important numbers and metrics
-- Use bullet points for lists
-- Use numbered steps for action items
-- Keep the answer concise but informative (max 300 words)"""
+Provide a clear, specific, data-driven answer. Use markdown formatting.
+Keep the answer focused and under 400 words.
+Use **bold** for important numbers and findings.
+Be actionable and specific - reference actual columns and metrics from the data."""
 
                     with st.spinner("💭 Generating answer..."):
-                        answer = call_llm(prompt, max_tokens=800)
+                        answer = call_llm(prompt, max_tokens=1000)
                         
-                        # Clean and format the answer
-                        answer = answer.replace('**', '<strong>').replace('**', '</strong>')
-                        answer = answer.replace('###', '<h4 style="color: #f093fb; margin: 0.5rem 0 0.25rem 0;">')
-                        answer = answer.replace('\n\n', '<br><br>')
-                        answer = answer.replace('- ', '• ')
+                        formatted_answer = answer.replace('**', '<strong>').replace('**', '</strong>')
+                        formatted_answer = formatted_answer.replace('###', '<h4 style="color: #f093fb; margin: 0.5rem 0 0.25rem 0;">')
+                        formatted_answer = formatted_answer.replace('\n\n', '<br><br>')
+                        formatted_answer = formatted_answer.replace('- ', '• ')
                         
                         # Convert numbered lists
-                        answer = re.sub(r'(\d+)\.\s+', r'<strong>\1.</strong> ', answer)
+                        formatted_answer = re.sub(r'(\d+)\.\s+', r'<strong>\1.</strong> ', formatted_answer)
                         
                         st.markdown(f"""
                         <div style="background:linear-gradient(135deg, rgba(100,108,255,0.12), rgba(167,139,250,0.06));
                                     border-left: 4px solid #6468ff;
                                     border-radius: 12px;
                                     padding: 1.2rem;
-                                    margin-top: 0.75rem;
-                                    box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+                                    margin-top: 0.75rem;">
                             <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
                                 <span style="font-size: 1.2rem;">💬</span>
-                                <span style="color: #a78bfa; font-weight: 700; font-size: 0.9rem;">Answer:</span>
+                                <span style="color: #a78bfa; font-weight: 700;">Answer:</span>
                             </div>
-                            <div style="color: rgba(255,255,255,0.9); line-height: 1.7; font-size: 0.9rem;">
-                                {answer}
+                            <div style="color: rgba(255,255,255,0.9); line-height: 1.7;">
+                                {formatted_answer}
                             </div>
                         </div>
                         """, unsafe_allow_html=True)
@@ -390,19 +613,20 @@ Answer the question in a clear, well-structured format. Use markdown for better 
                     padding:0.8rem;
                     text-align: center;">
             <p style="color:rgba(255,255,255,0.5); margin:0; font-size:0.75rem;">
-                🤖 AI-generated insights | Always verify critical findings with domain experts
+                🤖 AI-generated insights using OpenRouter API | Based on your data quality assessment, cleaning results, and modeling performance
             </p>
         </div>
         """, unsafe_allow_html=True)
         
         # Navigation buttons
+        st.markdown("---")
         col_nav1, col_nav2 = st.columns(2)
         with col_nav1:
             if st.button("← Back to Modeling", use_container_width=True):
                 st.session_state.current_page = "modeling"
                 st.rerun()
         with col_nav2:
-            if st.button("➡️ Proceed to Report", use_container_width=True):
+            if st.button("➡️ Generate Full Report", use_container_width=True):
                 st.session_state.current_page = "report"
                 st.rerun()
 
@@ -412,14 +636,22 @@ Answer the question in a clear, well-structured format. Use markdown for better 
         <div style="text-align: center; padding: 3rem 2rem;">
             <div style="font-size: 4rem; margin-bottom: 1rem;">🧠</div>
             <div style="font-size: 1.3rem; font-weight: 600; margin-bottom: 0.5rem; background: linear-gradient(135deg, #fff, #f093fb); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-                Ready to Generate Insights
+                Ready to Generate AI Insights
             </div>
-            <div style="font-size: 0.9rem; color: rgba(255,255,255,0.6);">
-                Select an insight type and click "Generate Insights" to begin
+            <div style="font-size: 0.9rem; color: rgba(255,255,255,0.6); max-width: 500px; margin: 0 auto;">
+                Select an insight type and click "Generate Insights" to get AI-powered analysis based on:
+            </div>
+            <div style="margin-top: 1rem; text-align: left; max-width: 400px; margin-left: auto; margin-right: auto;">
+                <li>✓ Your dataset structure and statistics</li>
+                <li>✓ Data quality assessment results</li>
+                <li>✓ Cleaning operations performed</li>
+                <li>✓ Model performance metrics (if modeling done)</li>
             </div>
         </div>
         """, unsafe_allow_html=True)
         
-        if st.button("← Back to Home"):
-            st.session_state.current_page = "home"
-            st.rerun()
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            if st.button("← Back to Home", use_container_width=True):
+                st.session_state.current_page = "home"
+                st.rerun()
