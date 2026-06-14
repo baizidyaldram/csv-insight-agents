@@ -20,7 +20,7 @@ st.set_page_config(
     page_title="CSV Insight Agents | AI-Powered Data Analysis",
     page_icon="🤖",
     layout="wide",
-    initial_sidebar_state="collapsed",
+    initial_sidebar_state="expanded",
 )
 
 # ── Modern Theme CSS (Slate & Emerald) ──────────────────────────────────────
