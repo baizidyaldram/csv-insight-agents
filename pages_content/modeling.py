@@ -321,7 +321,6 @@ def run_training(df, target_col, features_list, task_type, selected_model_names,
         
         log_step(f"🏆 Best model: {best_model_name}")
         st.success(f"✅ Modeling complete! Best model: {best_model_name}")
-        st.rerun()
     else:
         st.error("No models were successfully trained.")
 
@@ -424,4 +423,3 @@ def display_results(task_type):
     with col2:
         if st.button("➡️ Proceed to AI Insights", use_container_width=True):
             st.session_state.current_page = "insights"
-            st.rerun()
