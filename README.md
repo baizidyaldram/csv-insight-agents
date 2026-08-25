@@ -5,7 +5,7 @@
 ![Python](https://img.shields.io/badge/Python-3.10+-blue?logo=python&logoColor=white)
 ![Streamlit](https://img.shields.io/badge/Streamlit-1.35+-FF4B4B?logo=streamlit&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green)
-[![Live Demo](https://img.shields.io/badge/Live_Demo-Streamlit-FF4B4B?logo=streamlit&logoColor=white)](https://csv-insight-agents-ccezdjugc2cynibjkuwbgf.streamlit.app/)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Streamlit-FF4B4B?logo=streamlit&logoColor=white)](https://csv-insight-agents.streamlit.app/)
 
 ---
 
@@ -98,7 +98,7 @@ OPENROUTER_API_KEY = "sk-or-..."
 streamlit run app.py
 ```
 
-Or try the **[live demo](https://csv-insight-agents-ccezdjugc2cynibjkuwbgf.streamlit.app/)** instantly — no setup needed.
+Or try the **[live demo](https://csv-insight-agents.streamlit.app/)** instantly — no setup needed.
 
 ---
 
